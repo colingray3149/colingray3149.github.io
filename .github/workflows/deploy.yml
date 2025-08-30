@@ -2,7 +2,7 @@ name: Deploy Astro to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -25,35 +25,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'  # harmless if we end up using pnpm/yarn
 
-      - name: Install & Build (auto-detect npm/pnpm/yarn)
-        run: |
-          set -e
-          if [ -f pnpm-lock.yaml ]; then
-            corepack enable
-            pnpm --version
-            pnpm install --frozen-lockfile
-            pnpm run build
-          elif [ -f yarn.lock ]; then
-            corepack enable
-            yarn --version
-            yarn install --frozen-lockfile
-            yarn build
-          elif [ -f package-lock.json ]; then
-            npm ci
-            npm run build
-          else
-            npm install
-            npm run build
-          fi
+      - name: Install deps
+        run: npm install --no-audit --no-fund
 
-      # Ensure .nojekyll is in the published artifact
-      - name: Add .nojekyll to dist
-        run: |
-          mkdir -p dist
-          touch dist/.nojekyll
-          echo "dist contents:" && find dist -maxdepth 2 -type f | sed 's/^/  /'
+      - name: Build
+        run: npm run build
+
+      # Make sure Pages serves /_astro/*
+      - name: Add .nojekyll
+        run: touch dist/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
