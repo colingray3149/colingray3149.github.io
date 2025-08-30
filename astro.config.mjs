@@ -1,6 +1,7 @@
-    import { defineConfig } from 'astro/config';
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
 
-    // https://astro.build/config
-    export default defineConfig({
-      site: 'https://colingray3149.github.io', // This is the crucial line
-    });
+export default defineConfig({
+  site: 'https://colingray3149.github.io', // your exact domain
+  base: '/',                                // user site lives at domain root
+});

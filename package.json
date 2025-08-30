@@ -1,18 +1,7 @@
 {
-  "name": "colingray-portfolio",
-  "type": "module",
-  "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
-    "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "deploy": "astro build && gh-pages -d dist"
-  },
-  "dependencies": {
-    "astro": "^4.0.0"
-  },
-  "devDependencies": {
-    "gh-pages": "^6.3.0"
+    "preview": "astro preview"
   }
 }
