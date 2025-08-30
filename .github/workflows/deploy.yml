@@ -25,22 +25,40 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'npm'  # harmless if we end up using pnpm/yarn
 
-      - name: Install deps
-        run: npm ci
+      - name: Install & Build (auto-detect npm/pnpm/yarn)
+        run: |
+          set -e
+          if [ -f pnpm-lock.yaml ]; then
+            corepack enable
+            pnpm --version
+            pnpm install --frozen-lockfile
+            pnpm run build
+          elif [ -f yarn.lock ]; then
+            corepack enable
+            yarn --version
+            yarn install --frozen-lockfile
+            yarn build
+          elif [ -f package-lock.json ]; then
+            npm ci
+            npm run build
+          else
+            npm install
+            npm run build
+          fi
 
-      - name: Build site
-        run: npm run build
-
-      # Ensure GitHub Pages serves /_astro/*
-      - name: Add .nojekyll
-        run: touch ./dist/.nojekyll
+      # Ensure .nojekyll is in the published artifact
+      - name: Add .nojekyll to dist
+        run: |
+          mkdir -p dist
+          touch dist/.nojekyll
+          echo "dist contents:" && find dist -maxdepth 2 -type f | sed 's/^/  /'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: dist
 
   deploy:
     needs: build
