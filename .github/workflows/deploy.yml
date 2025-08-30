@@ -29,10 +29,11 @@ jobs:
       - name: Install deps
         run: npm install --no-audit --no-fund
 
-      - name: Build
-        run: npm run build
+      # Use a one-off Astro binary even if it's not in package.json
+      - name: Build (npx astro)
+        run: npx --yes astro@latest build
 
-      # Make sure Pages serves /_astro/*
+      # Ensure Pages serves /_astro/*
       - name: Add .nojekyll
         run: touch dist/.nojekyll
 
