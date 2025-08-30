@@ -1,0 +1,1087 @@
+---
+// This component renders the <canvas> and animates the city.
+// Static multi-layer mountains with sun/moon behind the right peak,
+// stars behind mountains, shooting stars (night),
+// daytime bird flocks above sun/mountains,
+// alternating tall/short buildings with string lights,
+// extra off-screen buildings on both sides,
+// and neon cars (blue/pink; 1-in-10 green) with wheels/body/cab/spoiler/headlight cone + underglow.
+---
+<canvas id="scrolling-background"></canvas>
+
+<style>
+  #scrolling-background {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+  }
+  html.city-mode-on #scrolling-background {
+    display: block;
+    opacity: 1;
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('scrolling-background');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+
+    // ---------- STATE ----------
+    // Mountains + sun/moon
+    let mountainPaths = [];                 // Path2D[]: farBack, midL, midR, frontL, frontR
+    let sunMoon = { cx: 0, cy: 0, r: 0 };
+    let mountainTopY = 0;                   // highest crest pixel Y (for birds' flight band)
+
+    // City stuff
+    let buildings = [];
+    let nextIsTall = Math.random() < 0.5;   // alternating parity seed
+    let stars = [];
+    let smokeParticles = [];
+    let fireParticles = [];
+    let cars = [];                          // cars (night-only spawn)
+    let shootingStars = [];
+    let birdFlocks = [];
+    let roadOffset = 0;
+
+    // Toggles
+    let isLightTheme = document.documentElement.classList.contains('light-theme');
+    let isCityModeOn = document.documentElement.classList.contains('city-mode-on');
+
+    // ---------- CONSTANTS ----------
+    const BUILDING_WIDTH = 120;
+    const ROAD_HEIGHT = 40;
+    const SCROLL_SPEED = 0.2;
+
+    // Keep one extra off-screen building on BOTH sides at all times
+    const EXTRA_OFFSCREEN = 1; // in building-width units
+
+    // Heights: 5 short, 5 tall (pick randomly within each, but always alternate pools)
+    const SHORT_HEIGHTS = [240, 270, 300, 320, 340];
+    const TALL_HEIGHTS  = [380, 420, 450, 480, 520];
+    const MAX_BUILDING  = Math.max(...TALL_HEIGHTS);
+
+    // Spawns
+    const STAR_SPAWN_CHANCE          = 0.04;
+    const CAR_SPAWN_CHANCE           = 0.002;  // same cadence as before
+    const SHOOTING_STAR_SPAWN_CHANCE = 0.016;
+    const BIRD_FLOCK_SPAWN_CHANCE    = 0.0015;
+
+    // City vertical offset (move whole city up/down)
+    const VERTICAL_OFFSET = -10;
+
+    // String-light sag controls
+    const SAG_FACTOR    = 0.22; // ↑ for more sag
+    const SAG_MIN       = 12;
+    const TILT_COMP     = 0.18;
+    const BULB_SPACING  = 24;
+    const BULB_RADIUS   = 3.5;
+
+    // Car metrics
+    const CAR_WIDTH_MIN  = 58;
+    const CAR_WIDTH_MAX  = 74;
+    const CAR_HEIGHT     = 22;          // main body height (not counting cab)
+    const CAB_HEIGHT     = 12;
+    const WHEEL_R        = 6.5;         // circle wheels
+    const CAR_BASE_SPEED = SCROLL_SPEED * 8; // like before
+    const CAR_SPEED_JITTER = 2.0;
+    const GREEN_PROB     = 0.90;        // 1 in 10 green
+
+    // Theme colors
+    let colors = {};
+
+    // ---------- RESTORE SAVED TOGGLES ----------
+    try {
+      const savedTheme = localStorage.getItem('theme');
+      const savedCity  = localStorage.getItem('cityMode');
+      if (savedTheme === 'light') document.documentElement.classList.add('light-theme');
+      if (savedCity  === 'on')    document.documentElement.classList.add('city-mode-on');
+    } catch(_) {}
+
+    isLightTheme = document.documentElement.classList.contains('light-theme');
+    isCityModeOn = document.documentElement.classList.contains('city-mode-on');
+
+    // ---------- COLORS ----------
+    const setColors = () => {
+      if (isLightTheme) {
+        colors = {
+          // sky & city
+          sky: '#f0f0f0',
+          building: '#d0d0d0',
+          buildingDark: '#b0b0b0',
+          window: '#ffffff',
+          windowGlow: '#e0e0e0',
+          road: '#a0a0a0',
+          roadLine: '#ffffff',
+          star: '#666666',
+          smoke: '#c0c0c0',
+          fire1: '#ff4444',
+          fire2: '#ff8800',
+          fire3: '#ffaa00',
+
+          // mountains + sun
+          mountainFront: '#b4b4b4',
+          mountainMid:   '#c4c4c4',
+          mountainFar:   '#d4d4d4',
+          sunMoonFill: '#f6c447',
+          sunMoonCore: '#ffd772',
+
+          // string-lights
+          stringWire:  '#6e6e6e',
+          bulbOutline: '#8a8a8a',
+          bulbYellow:  '#ffd84d',
+          bulbGreen:   '#7cff7a',
+
+          // car parts
+          tire: '#222',
+          rim:  '#888',
+          headlight: '#ffe36a',
+          neonPink: '#ff37a6',
+          neonBlue: '#5ae0ff',
+          neonGreen:'#78ff8a',
+        };
+      } else {
+        colors = {
+          // sky & city
+          sky: '#0a0b0f',
+          building: '#1a1d29',
+          buildingDark: '#141620',
+          window: '#5ae0ff',
+          windowGlow: '#ff37a6',
+          road: '#232838',
+          roadLine: '#5ae0ff',
+          star: '#5ae0ff',
+          smoke: '#ff37a6',
+          fire1: '#ff4444',
+          fire2: '#ff8800',
+          fire3: '#ffaa00',
+
+          // mountains + moon
+          mountainFront: '#151826',
+          mountainMid:   '#191c2c',
+          mountainFar:   '#1d2133',
+          sunMoonFill: '#bfc7dc',
+          sunMoonCore: '#e6ecff',
+
+          // string-lights
+          stringWire:  '#2a2f40',
+          bulbOutline: '#8a8a8a',
+          bulbYellow:  '#ffd84d',
+          bulbGreen:   '#7cff7a',
+
+          // car parts
+          tire: '#111',
+          rim:  '#aaa',
+          headlight: '#ffe36a',
+          neonPink: '#ff37a6',
+          neonBlue: '#5ae0ff',
+          neonGreen:'#78ff8a',
+        };
+      }
+    };
+
+    // ---------- MOUNTAINS ----------
+    const computeMountains = () => {
+      const H = canvas.height;
+      const W = canvas.width;
+
+      // height scales (smaller => taller)
+      const HEIGHT_FAR   = 0.60;
+      const HEIGHT_MID   = 0.70;
+      const HEIGHT_FRONT = 0.80;
+
+      // skinny/wide
+      const SQUEEZE_FAR   = 0.90;
+      const SQUEEZE_MID   = 0.88;
+      const SQUEEZE_FRONT = 0.86;
+
+      const STRETCH_X = 1.10;
+
+      const OFFSET_FARBACK   =  0.00;
+      const OFFSET_MID_LEFT  = -0.10;
+      const OFFSET_MID_RIGHT =  0.03;
+      const OFFSET_FRONT_LEFT= -0.02;
+      const OFFSET_FRONT_RGT =  0.00;
+
+      const X0_FAR   = 0.65;
+      const X0_MID   = 0.72;
+      const X0_FRONT = 0.88;
+
+      const ridgeFar0 = [
+        [-0.05, 0.92], [0.12, 0.66], [0.27, 0.99],
+        [0.43, 0.48],  [0.58, 0.70], [0.73, 0.58],
+        [0.88, 0.88],  [1.05, 0.35],
+      ];
+      const ridgeMid0 = [
+        [-0.30, 0.60], [-0.10, 0.60], [0.25, 0.86],
+        [0.32, 0.68],  [0.58, 0.72],  [0.72, 0.67],
+        [0.86, 0.73],  [1.05, 0.70],
+      ];
+      const ridgeFront0 = [
+        [-0.20, 0.50], [0.00, 0.72], [0.26, 0.66],
+        [0.39, 0.67],  [0.51, 0.72], [0.64, 0.65],
+        [0.76, 0.68],  [0.88, 0.56], [0.98, 0.70], [1.05, 0.69],
+      ];
+      const FRONT_PEAK_INDEX = 7;
+
+      const scaleY  = (pts, k) => pts.map(([x,y]) => [x, y*k]);
+      const squeeze = (pts, x0, k) => pts.map(([x,y]) => [x0 + (x - x0) * k, y]);
+      const offset  = (pts, dx)   => pts.map(([x,y]) => [x + dx, y]);
+      const stretch = (pts, s)    => pts.map(([x,y]) => [0.5 + (x - 0.5) * s, y]);
+
+      const makePath = (normPts) => {
+        const p = new Path2D();
+        p.moveTo(normPts[0][0] * W, normPts[0][1] * H);
+        for (let i = 1; i < normPts.length; i++) p.lineTo(normPts[i][0] * W, normPts[i][1] * H);
+        p.lineTo(W, H); p.lineTo(0, H); p.closePath();
+        return p;
+      };
+
+      let farBack  = stretch(offset(squeeze(scaleY(ridgeFar0,   HEIGHT_FAR),   X0_FAR,   SQUEEZE_FAR),   OFFSET_FARBACK),   STRETCH_X);
+      let midLeft  = stretch(offset(squeeze(scaleY(ridgeMid0,   HEIGHT_MID),   X0_MID,   SQUEEZE_MID),   OFFSET_MID_LEFT),  STRETCH_X);
+      let midRight = stretch(offset(squeeze(scaleY(ridgeMid0,   HEIGHT_MID),   X0_MID,   SQUEEZE_MID),   OFFSET_MID_RIGHT), STRETCH_X);
+      let frontLeft= stretch(offset(squeeze(scaleY(ridgeFront0, HEIGHT_FRONT), X0_FRONT, SQUEEZE_FRONT), OFFSET_FRONT_LEFT), STRETCH_X);
+      let frontRgt = stretch(offset(squeeze(scaleY(ridgeFront0, HEIGHT_FRONT), X0_FRONT, SQUEEZE_FRONT), OFFSET_FRONT_RGT),  STRETCH_X);
+
+      // record topmost crest across all layers (for birds)
+      const allLayers = [farBack, midLeft, midRight, frontLeft, frontRgt];
+      mountainTopY = Math.min(...allLayers.flat().map(p => p[1])) * H;
+
+      // ensure visible above tallest building + a margin
+      const MARGIN_PX    = 24;
+      const tallestTopPx = H - ROAD_HEIGHT - MAX_BUILDING;
+      const peakYNorm    = frontRgt[FRONT_PEAK_INDEX][1];
+      const peakYPx      = peakYNorm * H;
+      if (peakYPx > (tallestTopPx - MARGIN_PX)) {
+        const targetPeakNormY = (tallestTopPx - MARGIN_PX) / H;
+        const delta = peakYNorm - targetPeakNormY;
+        const raise = pts => pts.map(([x,y]) => [x, y - delta]);
+        farBack = raise(farBack); midLeft = raise(midLeft); midRight = raise(midRight);
+        frontLeft = raise(frontLeft); frontRgt = raise(frontRgt);
+      }
+
+      mountainPaths = [
+        makePath(farBack),
+        makePath(midLeft),
+        makePath(midRight),
+        makePath(frontLeft),
+        makePath(frontRgt),
+      ];
+
+      // sun/moon tucked behind the front-right peak
+      const frontRightPeakY = frontRgt[FRONT_PEAK_INDEX][1] * H;
+      const MOON_OFFSET = 0.00025 * H;
+      sunMoon = {
+        cx: W * 0.88,
+        cy: frontRightPeakY + MOON_OFFSET,
+        r:  Math.min(W, H) * 0.07
+      };
+    };
+
+    // ---------- INIT / RESIZE ----------
+    const resizeCanvas = () => {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      computeMountains();
+      generateBuildings();
+      generateStars();
+    };
+
+    // ---------- BUILDINGS ----------
+    const pickHeight = (isTall) => {
+      const pool = isTall ? TALL_HEIGHTS : SHORT_HEIGHTS;
+      return pool[(Math.random() * pool.length) | 0];
+    };
+
+    const makeBuilding = (x) => {
+      const h = pickHeight(nextIsTall);
+      const b = {
+        x,
+        y: canvas.height - h - ROAD_HEIGHT + VERTICAL_OFFSET,
+        width: BUILDING_WIDTH,
+        height: h,
+        windows: generateWindows(BUILDING_WIDTH, h),
+        fires: [],
+        isTall: nextIsTall
+      };
+      // toggle for the next building
+      nextIsTall = !nextIsTall;
+      return b;
+    };
+
+    const generateBuildings = () => {
+      buildings = [];
+      // start with one extra off-screen on LEFT
+      const startX = -EXTRA_OFFSCREEN * BUILDING_WIDTH;
+      // total visible columns + one extra on both sides
+      const cols = Math.ceil(canvas.width / BUILDING_WIDTH) + (EXTRA_OFFSCREEN * 2) + 1;
+
+      // randomize starting parity each regeneration (keeps city varied)
+      nextIsTall = Math.random() < 0.5;
+
+      for (let i = 0; i < cols; i++) {
+        const x = startX + i * BUILDING_WIDTH;
+        buildings.push(makeBuilding(x));
+      }
+    };
+
+    const generateWindows = (buildingWidth, buildingHeight) => {
+      const windows = [];
+      const windowSize = 12;
+      const spacing = 20;
+      const cols = Math.floor((buildingWidth - 20) / spacing);
+      const rows = Math.floor((buildingHeight - 40) / spacing);
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          if (Math.random() > 0.3) {
+            windows.push({
+              x: 10 + col * spacing,
+              y: 20 + row * spacing,
+              size: windowSize,
+              glow: Math.random() > 0.8,
+              onFire: false
+            });
+          }
+        }
+      }
+      return windows;
+    };
+
+    // ---------- DRAW BUILDING (restored) ----------
+    const drawBuilding = (b) => {
+      // base
+      ctx.fillStyle = colors.building;
+      ctx.fillRect(b.x, b.y, b.width, b.height);
+
+      // right edge shading
+      ctx.fillStyle = colors.buildingDark;
+      ctx.fillRect(b.x + b.width - 5, b.y, 5, b.height);
+
+      // windows
+      b.windows.forEach((w) => {
+        if (w.onFire) {
+          // bright window + flame + a little smoke
+          ctx.fillStyle = colors.window;
+          ctx.shadowColor = colors.fire1;
+          ctx.shadowBlur = 15;
+
+          const wx = b.x + w.x + w.size / 2;
+          const wy = b.y + w.y + w.size / 2;
+
+          drawFlame(wx, wy, Math.max(6, w.size * 0.7));
+
+          // little smoke wisps
+          for (let k = 0; k < 2; k++) {
+            smokeParticles.push({
+              x: wx + (Math.random() - 0.5) * 4,
+              y: wy + (Math.random() - 0.5) * 2,
+              vx: (Math.random() - 0.5) * 0.8,
+              vy: -(1.2 + Math.random() * 0.8),
+              life: 1,
+              size: 4 + Math.random() * 6,
+            });
+          }
+        } else if (w.glow) {
+          ctx.fillStyle = colors.windowGlow;
+          ctx.shadowColor = colors.windowGlow;
+          ctx.shadowBlur = 10;
+        } else {
+          ctx.fillStyle = colors.window;
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.fillRect(b.x + w.x, b.y + w.y, w.size, w.size);
+      });
+
+      // reset shadow
+      ctx.shadowBlur = 0;
+    };
+
+    // ---------- STARS ----------
+    const generateStars = () => {
+      stars = [];
+      const numStars = 100;
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * (canvas.height * 0.6 + VERTICAL_OFFSET),
+          size: Math.random() * 2 + 1,
+          twinkle: Math.random() * Math.PI * 2
+        });
+      }
+    };
+
+    // ---------- CARS ----------
+    const spawnCar = () => {
+      // Keep spawn behavior identical to old motorcycles: night-only, same chance
+      if (!isLightTheme && Math.random() < CAR_SPAWN_CHANCE) {
+        const w = CAR_WIDTH_MIN + Math.random() * (CAR_WIDTH_MAX - CAR_WIDTH_MIN);
+        const isGreen = Math.random() < GREEN_PROB;
+        cars.push({
+          x: -80,
+          y: canvas.height - ROAD_HEIGHT - (CAR_HEIGHT + WHEEL_R) + VERTICAL_OFFSET, // wheels touch road
+          width: w,
+          height: CAR_HEIGHT,
+          speed: CAR_BASE_SPEED + Math.random() * CAR_SPEED_JITTER,
+          cabH: CAB_HEIGHT,
+          wheelR: WHEEL_R,
+          isGreen,
+          clickCool: 0,  // debounce clicks
+          found: false   // for green Easter egg
+        });
+      }
+    };
+
+    // === Retro wedge car (anchored to road): body half-height, rear-steep trapezoid,
+const drawCar = (c) => {
+    // =================================================================
+    // CAR SHAPE TUNING - Adjust these constants to change the car's look
+    // =================================================================
+
+    // --- Main Body ---
+    const BODY_HEIGHT = (c.height || 22) * 0.5; // Controls the main body's thickness.
+    const BODY_FRONT_SLANT = c.width * 0.20;    // Larger value = more slanted front.
+    const BODY_REAR_SLANT = c.width * 0.02;     // Larger value = more slanted rear.
+
+    // --- Cab / Cockpit ---
+    const CAB_HEIGHT = BODY_HEIGHT * 0.9;      // How tall the cab is.
+    const CAB_WIDTH = c.width * 0.47;           // How wide the cab is from front to back.
+    const CAB_POSITION = c.width * 0.28;        // Moves the whole cab forward (>0) or backward (<0) along the body.
+    const CAB_REAR_SLANT = c.width * 0.1;       // Slant of the rear cab window.
+    const CAB_FRONT_SLANT = c.width * 0.08;     // Slant of the windshield.
+
+    // --- Spoiler ---
+    const SPOILER_HEIGHT = BODY_HEIGHT * 1.1;   // How tall the spoiler stands.
+    const SPOILER_WIDTH = c.width * 0.18;       // How wide the spoiler is from front to back.
+    const SPOILER_SLANT = c.width * 0.05;       // The angle/slant of the spoiler.
+    const SPOILER_POSITION = c.width * 0.05;    // Moves the spoiler forward from the absolute rear of the car.
+
+    // =================================================================
+    // End of Tuning
+    // =================================================================
+
+    const x = c.x;
+    const W = c.width;
+    const R = c.wheelR || 6.5;
+
+    // Road baseline and "half-showing" rule for wheels
+    const roadY = canvas.height - ROAD_HEIGHT + VERTICAL_OFFSET; // wheel CENTER
+    const bodyH = BODY_HEIGHT;
+    const yBot = roadY; // Body bottom is aligned with the wheel centers, hiding the top half.
+    const yTop = yBot - bodyH;
+
+    // Paint/gradients
+    const grad = ctx.createLinearGradient(x, yTop, x, yTop + bodyH);
+    if (c.isGreen) {
+        grad.addColorStop(0, '#47ff7a');
+        grad.addColorStop(1, '#20c85b');
+    } else {
+        grad.addColorStop(0, colors.neonPink);
+        grad.addColorStop(1, colors.neonBlue);
+    }
+
+    // ---------- underglow (on road) ----------
+    const glowCx = x + W * 0.5,
+        glowCy = roadY - 2;
+    const g = ctx.createRadialGradient(glowCx, glowCy, 2, glowCx, glowCy, W * 0.6);
+    g.addColorStop(0, c.isGreen ? colors.neonGreen : colors.neonPink);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.ellipse(glowCx, glowCy, W * 0.45, 10, 0, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.restore();
+
+    // ---------- wheels (full circles; body will cover top halves) ----------
+    ctx.fillStyle = colors.tire;
+    ctx.beginPath();
+    ctx.arc(x + W * 0.24, roadY, R, 0, Math.PI * 2);
+    ctx.arc(x + W * 0.76, roadY, R, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = colors.rim;
+    ctx.beginPath();
+    ctx.arc(x + W * 0.24, roadY, R * 0.4, 0, Math.PI * 2);
+    ctx.arc(x + W * 0.76, roadY, R * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ---------- BODY: Sleek trapezoid with a flat back and slanted front ----------
+    const rearInset = BODY_REAR_SLANT;
+    const frontInset = BODY_FRONT_SLANT;
+    ctx.beginPath();
+    ctx.moveTo(x, yBot); // Bottom rear
+    ctx.lineTo(x + W, yBot); // Bottom front
+    ctx.lineTo(x + W - frontInset, yTop); // Top front
+    ctx.lineTo(x + rearInset, yTop); // Top rear
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // subtle outline
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // ---------- CAB: A smaller trapezoid sitting on top of the main body ----------
+    const cabYTop = yTop - CAB_HEIGHT;
+    const cabBaseStartX = x + CAB_POSITION;
+    const cabBaseEndX = cabBaseStartX + CAB_WIDTH;
+    const cabTopStartX = cabBaseStartX + CAB_REAR_SLANT;
+    const cabTopEndX = cabBaseEndX - CAB_FRONT_SLANT;
+
+    ctx.beginPath();
+    ctx.moveTo(cabBaseStartX, yTop); // Back base of cab
+    ctx.lineTo(cabTopStartX, cabYTop); // Back top of cab
+    ctx.lineTo(cabTopEndX, cabYTop); // Front top of cab
+    ctx.lineTo(cabBaseEndX, yTop); // Front base of cab
+    ctx.fillStyle = grad; // Using the same gradient for a unified look
+    ctx.fill();
+
+    // Windshield line
+    ctx.strokeStyle = 'rgba(230,236,255,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cabTopStartX + 3, cabYTop + 2);
+    ctx.lineTo(cabTopEndX - 3, cabYTop + 2);
+    ctx.stroke();
+
+    // ---------- SPOILER: Attached back-slanted parallelogram ----------
+    const spoilerAttachX = x + SPOILER_POSITION;
+
+    ctx.beginPath();
+    ctx.moveTo(spoilerAttachX, yTop); // Bottom-front connection point
+    ctx.lineTo(spoilerAttachX - SPOILER_SLANT, yTop - SPOILER_HEIGHT); // Top-front point
+    ctx.lineTo(spoilerAttachX - SPOILER_SLANT - SPOILER_WIDTH, yTop - SPOILER_HEIGHT); // Top-back point
+    ctx.lineTo(spoilerAttachX - SPOILER_WIDTH, yTop); // Bottom-back connection point
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.stroke(); // Add outline to spoiler
+
+    // ---------- headlight + cone (embedded in nose) ----------
+    const hlW = Math.max(6, bodyH * 0.35);
+    const hlH = Math.max(5, bodyH * 0.25);
+    const hlX = x + W - frontInset - 2; // Position it right at the slanted nose
+    const hlY = yTop + 2;
+
+    ctx.fillStyle = colors.headlight;
+    // Skew the headlight to match the angle of the nose
+    ctx.save();
+    // Using a simple parallelogram for the headlight shape to match the slant
+    const slantAmount = 5;
+    ctx.beginPath();
+    ctx.moveTo(hlX, hlY);
+    ctx.lineTo(hlX + hlW, hlY);
+    ctx.lineTo(hlX + hlW - slantAmount, hlY + hlH);
+    ctx.lineTo(hlX - slantAmount, hlY + hlH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+
+    const coneLen = 120,
+        coneH = 28,
+        coneX0 = x + W - frontInset + 1,
+        coneY0 = yTop + bodyH * 0.18;
+    const coneG = ctx.createLinearGradient(coneX0, coneY0, coneX0 + coneLen, coneY0);
+    coneG.addColorStop(0, colors.headlight);
+    coneG.addColorStop(1, 'rgba(255,227,106,0)');
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.moveTo(coneX0, coneY0);
+    ctx.lineTo(coneX0 + coneLen, coneY0 - coneH * 0.5);
+    ctx.lineTo(coneX0 + coneLen, coneY0 + coneH * 0.5);
+    ctx.closePath();
+    ctx.fillStyle = coneG;
+    ctx.fill();
+    ctx.restore();
+};
+
+
+    // ---------- STRING LIGHTS ----------
+    const drawStringBetween = (leftB, midB, rightB) => {
+      const marginX  = 8;
+      const topInset = 6;
+
+      const x1 = leftB.x  + leftB.width - marginX;
+      const y1 = leftB.y  + topInset;
+
+      const x2 = rightB.x + marginX;
+      const y2 = rightB.y + topInset;
+
+      const dx = x2 - x1;
+      if (Math.abs(dx) <= 12) return;
+
+      // sag + tilt handling (cubic for smoothness)
+      const spanX = Math.abs(dx);
+      const sag   = Math.max(SAG_MIN, spanX * SAG_FACTOR);
+
+      const c1x = x1 + dx * 0.25;
+      const c2x = x2 - dx * 0.25;
+
+      const tilt = (y2 - y1) * TILT_COMP;
+      const lowY = Math.max(y1, y2);
+      const c1y  = lowY + sag * 0.55 + tilt;
+      const c2y  = lowY + sag * 0.55 - tilt;
+
+      // wire
+      ctx.save();
+      ctx.strokeStyle = colors.stringWire;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.bezierCurveTo(c1x, c1y, c2x, c2y, x2, y2);
+      ctx.stroke();
+      ctx.restore();
+
+      // point on cubic
+      const C = (t) => {
+        const mt = 1 - t;
+        const mt2 = mt * mt, t2 = t * t;
+        const a = mt2 * mt;
+        const b = 3 * mt2 * t;
+        const c = 3 * mt * t2;
+        const d = t * t2;
+        const x = a*x1 + b*c1x + c*c2x + d*x2;
+        const y = a*y1 + b*c1y + c*c2y + d*y2;
+        return { x, y};
+      };
+
+      // bulbs
+      const approxLen = Math.hypot(dx, (c1y + c2y) * 0.5 - (y1 + y2) * 0.5) + sag;
+      const count = Math.max(6, Math.floor(approxLen / BULB_SPACING));
+
+      for (let i = 1; i <= count; i++) {
+        const t = i / (count + 1);
+        const { x, y } = C(t);
+
+        if (isLightTheme) {
+          ctx.save();
+          ctx.shadowBlur = 0;
+          ctx.lineWidth = 1.6;
+          ctx.strokeStyle = colors.bulbOutline || colors.stringWire;
+          ctx.beginPath();
+          ctx.arc(x, y, BULB_RADIUS, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        } else {
+          const color = (i % 2 === 0) ? colors.bulbYellow : colors.bulbGreen;
+          ctx.save();
+          ctx.fillStyle = color;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(x, y, BULB_RADIUS, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+    };
+
+    const drawStringLightsForTriples = () => {
+      for (let i = 1; i < buildings.length - 1; i++) {
+        const L = buildings[i - 1];
+        const M = buildings[i];
+        const R = buildings[i + 1];
+        if (L.height > M.height && R.height > M.height) {
+          drawStringBetween(L, M, R);
+        }
+      }
+    };
+
+    // ---------- ROAD ----------
+    const drawRoad = () => {
+      const roadY = canvas.height - ROAD_HEIGHT + VERTICAL_OFFSET;
+      ctx.fillStyle = colors.road;
+      ctx.fillRect(0, roadY, canvas.width, ROAD_HEIGHT);
+      ctx.strokeStyle = colors.roadLine;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([20, 10]);
+      ctx.lineDashOffset = roadOffset;
+      ctx.beginPath();
+      ctx.moveTo(0, roadY + ROAD_HEIGHT / 2);
+      ctx.lineTo(canvas.width, roadY + ROAD_HEIGHT / 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    };
+
+    // ---------- SKY LAYERS ----------
+    const drawStars = () => {
+      if (isLightTheme) return;
+      stars.forEach(star => {
+        const tw = Math.sin(star.twinkle + Date.now() * 0.001) * 0.5 + 0.5;
+        ctx.fillStyle = colors.star;
+        ctx.globalAlpha = tw * 0.8 + 0.2;
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+      });
+      ctx.globalAlpha = 1;
+    };
+
+    const updateAndDrawShootingStars = () => {
+      if (isLightTheme) { shootingStars = []; return; }
+
+      if (Math.random() < SHOOTING_STAR_SPAWN_CHANCE) {
+        const x0 = Math.random() * canvas.width;
+        const y0 = -20; // off-screen top
+        const vy = 3 + Math.random() * 3.5;         // down
+        const vx = (Math.random() - 0.5) * 5.0;     // slight left/right
+        shootingStars.push({ x: x0, y: y0, vx, vy, len: 80 + Math.random() * 60, life: 1.0 });
+      }
+
+      shootingStars = shootingStars.filter(s => {
+        s.x += s.vx;
+        s.y += s.vy;
+        s.len *= 0.985;
+        s.life -= 0.004;
+
+        const vmag = Math.hypot(s.vx, s.vy) || 1;
+        thead:
+        {
+          const tx = s.x - (s.vx / vmag) * s.len;
+          const ty = s.y - (s.vy / vmag) * s.len;
+
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, Math.min(1, s.life));
+          ctx.strokeStyle = colors.star;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(tx, ty);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        return s.life > 0 && s.y < canvas.height + 120 && s.x > -120 && s.x < canvas.width + 120;
+      });
+    };
+
+    const updateAndDrawBirdFlocks = () => {
+      if (!isLightTheme) { birdFlocks = []; return; }
+
+      const margin = 24;
+      const topBand    = 0.06 * canvas.height;
+      const sunTop     = (sunMoon.cy || 0) - (sunMoon.r || 0) - margin;
+      const crestTop   = (mountainTopY || canvas.height * 0.55) - margin;
+      const bottomBand = Math.max(topBand + 20, Math.min(sunTop, crestTop));
+
+      const yMin = topBand;
+      const yMax = Number.isFinite(bottomBand) && bottomBand > yMin + 10 ? bottomBand : canvas.height * 0.22;
+
+      if (Math.random() < BIRD_FLOCK_SPAWN_CHANCE) {
+        const fromLeft = Math.random() < 0.5;
+        const speed = (fromLeft ? 1 : -1) * (1.0 + Math.random() * 1.2);
+        const yBase = yMin + Math.random() * (yMax - yMin);
+        const count = 8 + Math.floor(Math.random() * 8);
+        const scale = 1.0 + Math.random() * 0.6;
+
+        const birds = [];
+        for (let i = 0; i < count; i++) {
+          const row = Math.floor(i / 2);
+          const spacing = 14 * scale;
+          const dx = (spacing + row * 3) * (fromLeft ? 1 : -1) * row;
+          const dy = (i % 2 === 0 ? -1 : 1) * (5 + row) * (0.6 * scale);
+          birds.push({
+            x: fromLeft ? -80 - dx : canvas.width + 80 - dx,
+            y: yBase + dy,
+            phase: Math.random() * Math.PI * 2,
+            s: 6 * scale
+          });
+        }
+        birdFlocks.push({ birds, vx: speed, amp: 2.5 * scale });
+      }
+
+      ctx.save();
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+
+      const t = performance.now() * 0.012;
+      birdFlocks = birdFlocks.filter(f => {
+        let alive = false;
+        for (const b of f.birds) {
+          b.x += f.vx;
+          const flap = Math.sin(t + b.phase) * f.amp;
+          ctx.beginPath();
+          ctx.moveTo(b.x - b.s, b.y - flap);
+          ctx.lineTo(b.x,       b.y);
+          ctx.lineTo(b.x + b.s, b.y - flap);
+          ctx.stroke();
+          if (b.x > -100 && b.x < canvas.width + 100) alive = true;
+        }
+        return alive;
+      });
+      ctx.restore();
+    };
+
+    // ---------- SUN/MOON + MOUNTAINS DRAW ----------
+    const drawSunMoonBehindMountains = () => {
+      // disk first (so mountains occlude)
+      const g = ctx.createRadialGradient(sunMoon.cx, sunMoon.cy, 0, sunMoon.cx, sunMoon.cy, sunMoon.r);
+      g.addColorStop(0, colors.sunMoonCore);
+      g.addColorStop(1, colors.sunMoonFill);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(sunMoon.cx, sunMoon.cy, sunMoon.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // mountains back -> front
+      ctx.fillStyle = colors.mountainFar;   ctx.fill(mountainPaths[0]);
+      ctx.fillStyle = colors.mountainMid;   ctx.fill(mountainPaths[1]);
+      ctx.fillStyle = colors.mountainMid;   ctx.fill(mountainPaths[2]);
+      ctx.fillStyle = colors.mountainFront; ctx.fill(mountainPaths[3]);
+      ctx.fillStyle = colors.mountainFront; ctx.fill(mountainPaths[4]);
+    };
+
+    // ---------- FIRE / SMOKE ----------
+    const updateFireParticles = () => {
+      if (!isLightTheme) return;
+      fireParticles = fireParticles.filter(p => {
+        p.x += p.vx + SCROLL_SPEED;
+        p.y += p.vy;
+        p.life -= 0.02;
+        p.vy -= 0.05;
+        p.vx += (Math.random() - 0.5) * 0.1;
+        if (p.life > 0) {
+          const fireColors = [colors.fire1, colors.fire2, colors.fire3];
+          const idx = Math.floor((1 - p.life) * fireColors.length);
+          ctx.fillStyle = fireColors[Math.min(idx, fireColors.length - 1)];
+          ctx.globalAlpha = p.life;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+          return true;
+        }
+        return false;
+      });
+      ctx.globalAlpha = 1;
+    };
+
+    const updateSmokeParticles = () => {
+      if (Math.random() < 0.1 && buildings.length > 0) {
+        const b = buildings[Math.floor(Math.random() * buildings.length)];
+        smokeParticles.push({
+          x: b.x + b.width/2 + (Math.random() - 0.5) * 20,
+          y: b.y,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: -Math.random() * 2 - 1,
+          life: 1,
+          size: Math.random() * 8 + 4
+        });
+      }
+      smokeParticles = smokeParticles.filter(p => {
+        p.x += p.vx + SCROLL_SPEED;
+        p.y += p.vy;
+        p.life -= 0.01;
+        p.vy *= 0.99;
+        if (p.life > 0) {
+          ctx.fillStyle = colors.smoke;
+          ctx.globalAlpha = p.life * 0.3;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+          return true;
+        }
+        return false;
+      });
+      ctx.globalAlpha = 1;
+    };
+
+    // ---------- INPUT ----------
+    const handleCanvasClick = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const p = ('changedTouches' in event && event.changedTouches?.[0]) ? event.changedTouches[0] : event;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (p.clientX - rect.left) * scaleX;
+      const y = (p.clientY - rect.top) * scaleY;
+
+      // Interact with cars (night)
+      if (!isLightTheme) {
+        for (let i = 0; i < cars.length; i++) {
+          const m = cars[i];
+          const hit =
+            x >= m.x && x <= m.x + m.width &&
+            y >= m.y - m.cabH && y <= m.y + m.height + m.wheelR + 6;
+          if (hit) {
+            if (m.isGreen) {
+              if (!m.found && m.clickCool <= 0) {
+                // Go to the runner game page
+                window.location.href = '/green-car-runner';
+                return;
+              }
+            } else {
+              // Non-green: speed up
+              m.speed += 2.0;
+              m.clickCool = 10;
+            }
+            return;
+          }
+        }
+      }
+
+      // Daytime window fires
+      if (isLightTheme) {
+        for (let b of buildings) {
+          for (let w of b.windows) {
+            const wx = b.x + w.x, wy = b.y + w.y;
+            if (x >= wx && x <= wx + w.size && y >= wy && y <= wy + w.size && !w.onFire) {
+              w.onFire = true;
+              w.burnStarted = performance.now();
+              for (let i = 0; i < 20; i++) {
+                fireParticles.push({
+                  x: wx + w.size/2 + (Math.random() - 0.5) * 8,
+                  y: wy + w.size/2 + (Math.random() - 0.5) * 8,
+                  vx: (Math.random() - 0.5) * 1.5,
+                  vy: -Math.random() * 2.5 - 0.5,
+                  life: 1,
+                  size: Math.random() * 4 + 2
+                });
+              }
+              return;
+            }
+          }
+        }
+      }
+
+      // Ambient click smoke puffs
+      for (let i = 0; i < 15; i++) {
+        smokeParticles.push({
+          x: x + (Math.random() - 0.5) * 30,
+          y: y + (Math.random() - 0.5) * 30,
+          vx: (Math.random() - 0.5) * 3,
+          vy: (Math.random() - 0.5) * 3,
+          life: 1,
+          size: Math.random() * 8 + 4
+        });
+      }
+    };
+
+    // ---------- ANIMATION LOOP ----------
+    let animationFrameId;
+    const animate = () => {
+      // 1) sky
+      ctx.fillStyle = colors.sky;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 2) stars & shooters behind mountains
+      drawStars();
+      updateAndDrawShootingStars();
+
+      // 3) sun/moon then mountains (occluding)
+      drawSunMoonBehindMountains();
+
+      // 4) daytime birds above mountains/sun
+      updateAndDrawBirdFlocks();
+
+      // 5) city scroll & content
+      roadOffset += SCROLL_SPEED * 20;
+      if (roadOffset > 30) roadOffset = 0;
+
+      spawnCar();
+
+      // Move buildings
+      buildings.forEach(b => b.x -= SCROLL_SPEED);
+
+      // Cull left when well beyond the extra margin
+      while (buildings.length && (buildings[0].x + BUILDING_WIDTH) < -(EXTRA_OFFSCREEN * BUILDING_WIDTH)) {
+        buildings.shift();
+      }
+      // Ensure right side has at least one extra building off-screen
+      while (buildings.length && (buildings[buildings.length - 1].x + BUILDING_WIDTH) < (canvas.width + EXTRA_OFFSCREEN * BUILDING_WIDTH)) {
+        const last = buildings[buildings.length - 1];
+        buildings.push(makeBuilding(last.x + BUILDING_WIDTH));
+      }
+
+      // Move cars
+      cars = cars.filter(m => {
+        m.x += m.speed;
+        if (m.clickCool > 0) m.clickCool--;
+        return m.x < canvas.width + 200;
+      });
+
+      // Draw buildings & rooftop strings
+      buildings.forEach(drawBuilding);
+      drawStringLightsForTriples();
+
+      // Road on top of city base
+      drawRoad();
+
+      // Draw cars (after road, so they sit on it)
+      cars.forEach(drawCar);
+
+      // Smoke + fire
+      updateSmokeParticles();
+      updateFireParticles();
+
+      // twinkle drift (stars already move left slowly)
+      if (!isLightTheme && Math.random() < STAR_SPAWN_CHANCE) {
+        stars.push({
+          x: canvas.width,
+          y: Math.random() * (canvas.height * 0.6 + VERTICAL_OFFSET),
+          size: Math.random() * 2 + 1,
+          twinkle: Math.random() * Math.PI * 2
+        });
+      }
+      stars = stars.filter(star => {
+        star.x -= SCROLL_SPEED * 0.5;
+        star.twinkle += 0.02;
+        return star.x > -10;
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // ---------- FLAME ----------
+    const drawFlame = (cx, cy, baseSize) => {
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseSize);
+      g.addColorStop(0.0, '#ffff66');
+      g.addColorStop(0.4, '#ff9900');
+      g.addColorStop(1.0, '#ff3300');
+      ctx.fillStyle = g;
+      const wiggle = (Math.random() - 0.5) * 2;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - baseSize * 0.2, baseSize * 0.6, baseSize * (0.9 + wiggle * 0.05), 0, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    // ---------- LIFECYCLE ----------
+    const startAnimation = () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      setColors();
+      resizeCanvas();
+      animate();
+    };
+
+    const stopAnimation = () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
+
+    window.addEventListener('resize', resizeCanvas);
+    canvas.style.pointerEvents = 'none';
+
+    const onDocActivate = (e) => {
+      if (!isCityModeOn) return;
+      if (e.target.closest('#theme-toggle, #city-toggle, nav, a, button, input, textarea, select')) return;
+      handleCanvasClick(e);
+    };
+    document.addEventListener('click', onDocActivate, true);
+    document.addEventListener('touchend', onDocActivate, true);
+
+    document.addEventListener('city-mode-change', (e) => {
+      isCityModeOn = (e.detail.mode === 'on');
+      if (isCityModeOn) startAnimation(); else stopAnimation();
+    });
+
+    document.addEventListener('theme-change', () => {
+      isLightTheme = document.documentElement.classList.contains('light-theme');
+      if (isCityModeOn) {
+        setColors();
+        generateBuildings();
+        resizeCanvas();
+        if (isLightTheme) cars = []; // clear night-only entities
+      }
+    });
+
+    if (isCityModeOn) startAnimation();
+  }
+</script>

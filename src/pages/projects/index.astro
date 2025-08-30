@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+
+// This array defines the cards shown on this page
+const projects = [
+  { title: "Combustion ML (Mechanism Reduction)", href: "/projects/combustion-ml/", blurb: "L1 pruning, speedup & accuracy tradeoffs" },
+  { title: "ANSYS Fluent — Scramjet Cold-Flow", href: "/projects/ansys-coldflow/", blurb: "2D geometry, mesh study, baseline solution" },
+  { title: "FDS/PyroSim — Dresser Fire", href: "/projects/fds-dresser-fire/", blurb: "HRRPUA & vent sensitivity" },
+  { title: "Autoignition Temperature Research", href: "/projects/autoignition-research/", blurb: "Summer research notes & findings" },
+];
+---
+<BaseLayout title="Projects — Colin Gray">
+  <div class="wrap">
+    <h1 class="page-title">Projects</h1>
+    <p class="page-subtitle text-muted">A collection of my work in combustion, CFD, and machine learning.</p>
+    <div class="projects-grid">
+      {projects.map(project => <ProjectCard project={project} />)}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-title {
+    text-align: center;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--pink), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-subtitle {
+    text-align: center;
+    margin-bottom: 60px;
+    max-width: 50ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .projects-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+</style>

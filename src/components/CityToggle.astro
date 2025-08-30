@@ -1,0 +1,59 @@
+---
+// src/components/CityToggle.astro
+// This button toggles the visibility of the city background animation.
+---
+<button id="city-toggle" title="Toggle city background">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="city-on-icon"><path d="M2 22h20"></path><path d="M5 22V6l4-4l4 4v16"></path><path d="M15 22V10l4-4l4 4v12"></path></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="city-off-icon"><path d="M2 22h20"></path><path d="m11 11-1-11"></path><path d="m16 22-1-11"></path><path d="M12.5 2.5-1 11"></path><path d="M18.5 2.5 1 18"></path></svg>
+</button>
+
+<style>
+  #city-toggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: all 0.3s ease;
+  }
+  #city-toggle:hover {
+    color: var(--cyan);
+    background: var(--panel-2);
+  }
+
+  /* Hide one icon based on the current state */
+  .city-on-icon,
+  html.city-mode-on .city-off-icon {
+    display: none;
+  }
+  html.city-mode-on .city-on-icon {
+    display: block;
+  }
+</style>
+
+<script>
+  const cityToggle = document.getElementById('city-toggle');
+  const applyCityMode = (mode) => {
+    if (mode === 'on') {
+      document.documentElement.classList.add('city-mode-on');
+    } else {
+      document.documentElement.classList.remove('city-mode-on');
+    }
+  };
+
+  cityToggle.addEventListener('click', () => {
+    const isCityOn = document.documentElement.classList.contains('city-mode-on');
+    const newMode = isCityOn ? 'off' : 'on';
+    
+    applyCityMode(newMode);
+    localStorage.setItem('cityMode', newMode);
+
+    // Announce that the city mode has changed
+    const event = new CustomEvent('city-mode-change', { detail: { mode: newMode } });
+    document.dispatchEvent(event);
+  });
+</script>

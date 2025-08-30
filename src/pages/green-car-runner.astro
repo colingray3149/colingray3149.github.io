@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Green Car Runner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <style>
+        :root {
+            --glow-color: #78ff8a;
+            --text-color: #e6ecff;
+            --dark-bg: #151826;
+            --shadow-color: rgba(0,0,0,0.5);
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #0a0b0f;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        #runner-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        .hud {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 20px;
+            font-size: 4rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color), 0 2px 4px var(--shadow-color);
+            letter-spacing: 0.1em;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-controls {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
+            z-index: 10;
+        }
+        .btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            border: 0;
+            background: var(--dark-bg);
+            color: var(--text-color);
+            box-shadow: 0 8px 20px var(--shadow-color), inset 0 0 0 2px rgba(230,236,255,0.1);
+            font-size: 28px;
+            font-weight: 700;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Corrected Grid Layout */
+        #btn-up { grid-area: 1 / 2 / 2 / 3; }
+        #btn-left { grid-area: 2 / 1 / 3 / 2; }
+        #btn-dn { grid-area: 2 / 2 / 3 / 3; }
+        #btn-right { grid-area: 2 / 3 / 3 / 4; }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 4px 10px var(--shadow-color), inset 0 0 0 2px rgba(230,236,255,0.1);
+        }
+        .hint {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            color: #9fb0ff;
+            opacity: .8;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .game-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 11, 15, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .game-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .game-overlay h1 {
+            font-size: 5rem;
+            margin: 0;
+            text-shadow: 0 0 15px var(--glow-color);
+        }
+        .game-overlay p {
+            font-size: 1.5rem;
+            margin: 10px 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="runner-canvas"></canvas>
+    <div class="hud"><span id="score">0</span></div>
+    <div class="mobile-controls">
+        <button class="btn" id="btn-left" aria-label="Decelerate">◄</button>
+        <button class="btn" id="btn-right" aria-label="Accelerate">►</button>
+        <button class="btn" id="btn-up" aria-label="Jump">▲</button>
+        <button class="btn" id="btn-dn" aria-label="Duck">▼</button>
+    </div>
+    <div class="hint">◄► speed · ▲ jump · ▼ duck</div>
+    <div class="game-overlay" id="game-over-screen">
+        <h1>Game Over</h1>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <p id="countdown-message"></p>
+    </div>
+
+    <script>
+    (() => {
+        const canvas = document.getElementById('runner-canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+
+        let scaleX = 1, scaleY = 1;
+        const resize = () => {
+            const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+            canvas.width = Math.floor(innerWidth * dpr);
+            canvas.height = Math.floor(innerHeight * dpr);
+            scaleX = canvas.width / innerWidth;
+            scaleY = canvas.height / innerHeight;
+        };
+        window.addEventListener('resize', resize, { passive: true });
+        
+        const colors = { sky: '#0a0b0f', mountainFar: '#1d2133', mountainMid: '#191c2c', mountainFront: '#151826', road: '#232838', roadLine: '#5ae0ff', star: '#5ae0ff', neonGreen: '#78ff8a', neonPink: '#ff37a6', neonBlue: '#5ae0ff', tire: '#111', rim: '#aaa', headlight: '#ffe36a' };
+
+        // Game State
+        let gameState = 'ready';
+        let score = 0;
+        let difficulty = 1;
+        const BASE_SPEED = 8;
+        let speed = BASE_SPEED * scaleX;
+        let speedModifier = 1.0;
+        let spawnTimer = 0;
+        let particles = [];
+        let obstacles = [];
+        const inputState = { left: false, right: false };
+        
+        const H = () => canvas.height;
+        const W = () => canvas.width;
+        const ROAD_HEIGHT = 60 * scaleY;
+        const GROUND_Y_OFFSET = -12 * scaleY;
+        const GROUND_Y = () => H() - ROAD_HEIGHT + GROUND_Y_OFFSET;
+        const GRAVITY = 0.55 * scaleY;
+        const JUMP_VY = -14.5 * scaleY;
+        const JUMP_CANCEL_VY_MULT = 0.4;
+        const MAX_FALL = 20 * scaleY;
+
+        const CAR = {
+            x: () => W() * 0.18,
+            y: 0, w: 88 * scaleX, h: 22 * scaleY, vy: 0,
+            grounded: true, ducking: false, duckLerp: 0,
+            hitbox() {
+                const bodyH = (this.h * 0.5) * (1 - 0.4 * this.duckLerp);
+                const cabH = (bodyH * 0.9) * (1 - 0.4 * this.duckLerp);
+                const totalH = bodyH + cabH;
+                const top = this.y - cabH;
+                return { x: this.x(), y: top, w: this.w * 0.9, h: totalH };
+            }
+        };
+
+        const bg = { stars: [], buildings: [] };
+        const scoreEl = document.getElementById('score');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const countdownMessageEl = document.getElementById('countdown-message');
+
+        function createParticle(x, y, count, color, life, speed) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * speed,
+                    vy: (Math.random() - 0.5) * speed,
+                    life: Math.random() * life,
+                    color,
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+        function updateAndDrawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        const drawPlayerCar = (duckAmount) => {
+            const x = CAR.x();
+            const y = CAR.y;
+            const Wc = CAR.w;
+            const Hc = CAR.h;
+            const BODY_HEIGHT_BASE = Hc * 0.5;
+            const BODY_FRONT_SLANT_VAL = Wc * 0.20;
+            const BODY_REAR_SLANT_VAL = Wc * 0.02;
+            const CAB_HEIGHT_BASE = BODY_HEIGHT_BASE * 0.9;
+            const CAB_WIDTH_VAL = Wc * 0.47;
+            const CAB_POSITION_VAL = Wc * 0.28;
+            const CAB_REAR_SLANT_VAL = Wc * 0.1;
+            const CAB_FRONT_SLANT_VAL = Wc * 0.08;
+            const SPOILER_HEIGHT_BASE = BODY_HEIGHT_BASE * 1.1;
+            const SPOILER_WIDTH_VAL = Wc * 0.18;
+            const SPOILER_SLANT_VAL = Wc * 0.05;
+            const SPOILER_POSITION_VAL = Wc * 0.05;
+            const BODY_HEIGHT = BODY_HEIGHT_BASE * (1 - 0.4 * duckAmount);
+            const CAB_HEIGHT = CAB_HEIGHT_BASE * (1 - 0.4 * duckAmount);
+            const SPOILER_HEIGHT = SPOILER_HEIGHT_BASE * (1 - 0.4 * duckAmount);
+            const BODY_FRONT_SLANT = Wc * (0.20 + 0.15 * duckAmount);
+            const yTop = y;
+            const yBot = y + BODY_HEIGHT;
+            const wheelR = Hc * 0.5;
+            const wheelCenterY = yBot;
+            const grad = ctx.createLinearGradient(x, yTop, x, yBot);
+            grad.addColorStop(0, '#47ff7a');
+            grad.addColorStop(1, '#20c85b');
+            ctx.fillStyle = colors.tire;
+            ctx.beginPath();
+            ctx.arc(x + Wc * 0.24, wheelCenterY, wheelR, 0, Math.PI*2);
+            ctx.arc(x + Wc * 0.76, wheelCenterY, wheelR, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = colors.rim;
+            ctx.beginPath();
+            ctx.arc(x + Wc * 0.24, wheelCenterY, wheelR*0.4, 0, Math.PI*2);
+            ctx.arc(x + Wc * 0.76, wheelCenterY, wheelR*0.4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(x + BODY_REAR_SLANT_VAL, yTop);
+            ctx.lineTo(x + Wc - BODY_FRONT_SLANT, yTop);
+            ctx.lineTo(x + Wc, yBot);
+            ctx.lineTo(x, yBot);
+            ctx.closePath();
+            ctx.fill();
+            const cabYTop = yTop - CAB_HEIGHT;
+            const cabBaseStartX = x + CAB_POSITION_VAL;
+            const cabBaseEndX = cabBaseStartX + CAB_WIDTH_VAL;
+            const cabTopStartX = cabBaseStartX + CAB_REAR_SLANT_VAL;
+            const cabTopEndX = cabBaseEndX - CAB_FRONT_SLANT_VAL;
+            ctx.beginPath();
+            ctx.moveTo(cabBaseStartX, yTop);
+            ctx.lineTo(cabTopStartX, cabYTop);
+            ctx.lineTo(cabTopEndX, cabYTop);
+            ctx.lineTo(cabBaseEndX, yTop);
+            ctx.fill();
+            const spoilerAttachX = x + SPOILER_POSITION_VAL;
+            ctx.beginPath();
+            ctx.moveTo(spoilerAttachX, yTop);
+            ctx.lineTo(spoilerAttachX - SPOILER_SLANT_VAL, yTop - SPOILER_HEIGHT);
+            ctx.lineTo(spoilerAttachX - SPOILER_SLANT_VAL - SPOILER_WIDTH_VAL, yTop - SPOILER_HEIGHT);
+            ctx.lineTo(spoilerAttachX - SPOILER_WIDTH_VAL, yTop);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = colors.headlight;
+            const hlW = Wc * 0.08, hlH = Hc * 0.25;
+            const hlX = x + Wc - BODY_FRONT_SLANT;
+            const hlY = yTop + BODY_HEIGHT * 0.1;
+            ctx.beginPath();
+            ctx.moveTo(hlX, hlY);
+            ctx.lineTo(hlX - hlW, hlY + hlH * 0.2);
+            ctx.lineTo(hlX - hlW, hlY + hlH);
+            ctx.lineTo(hlX, hlY + hlH);
+            ctx.closePath();
+            ctx.fill();
+        };
+
+        function drawObstacle(o) {
+            if (o.type === 'car') {
+                const g = ctx.createLinearGradient(o.x, o.y, o.x + o.w, o.y);
+                g.addColorStop(0, colors.neonPink); g.addColorStop(1, colors.neonBlue);
+                ctx.fillStyle = g;
+                ctx.fillRect(o.x, o.y, o.w, o.h);
+                ctx.fillRect(o.x + o.w*0.50, o.y - o.h*0.35, o.w*0.40, o.h*0.35);
+            } else { // plane
+                const flameX = o.x + o.w;
+                const flameY = o.y + o.h / 2;
+                const flameLength = o.w * 0.6;
+                for (let i = 0; i < 5; i++) {
+                    const life = Math.random();
+                    const r = (1 - life) * 8 * scaleY + 2;
+                    const px = flameX + life * flameLength * (0.5 + Math.random() * 0.5);
+                    const py = flameY + (Math.random() - 0.5) * o.h * 0.9;
+                    if (life > 0.6) ctx.fillStyle = 'rgba(255, 230, 100, 0.8)';
+                    else if (life > 0.3) ctx.fillStyle = 'rgba(255, 140, 0, 0.9)';
+                    else ctx.fillStyle = 'rgba(255, 60, 0, 1)';
+                    ctx.beginPath();
+                    ctx.arc(px, py, r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#cfd7ff';
+                ctx.fillRect(o.x, o.y, o.w, o.h);
+                ctx.fillRect(o.x + o.w*0.15, o.y + o.h*0.35, o.w*0.7, o.h*0.22);
+                ctx.fillRect(o.x - o.w*0.08, o.y + o.h*0.15, o.w*0.08, o.h*0.7);
+            }
+        }
+        
+        function drawBackground() {
+            ctx.fillStyle = colors.sky; ctx.fillRect(0,0,W(),H());
+            ctx.globalAlpha = 0.7; ctx.fillStyle = colors.star;
+            for (const s of bg.stars) {
+                s.x -= 0.1; if(s.x < 0) s.x = W();
+                ctx.fillRect(s.x, s.y, s.s, s.s);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawRoad() {
+            const y = H() - ROAD_HEIGHT;
+            ctx.fillStyle = colors.road; ctx.fillRect(0, y, W(), ROAD_HEIGHT);
+            ctx.strokeStyle = colors.roadLine; ctx.lineWidth = 2 * scaleY;
+            ctx.setLineDash([24 * scaleX, 12 * scaleX]);
+            ctx.lineDashOffset = -(performance.now() * 0.001 * speed);
+            ctx.beginPath(); ctx.moveTo(0, y + ROAD_HEIGHT/2); ctx.lineTo(W(), y + ROAD_HEIGHT/2);
+            ctx.stroke(); ctx.setLineDash([]);
+        }
+
+        function scheduleSpawn(dt) {
+            spawnTimer -= dt;
+            if (spawnTimer <= 0) {
+                if (Math.random() < 0.3) spawnMissileWall(); else spawnGroundCar();
+                spawnTimer = (1400 / Math.sqrt(difficulty));
+            }
+        }
+
+        function spawnGroundCar() {
+            const h = CAR.h * 0.5;
+            const w = 70 * scaleX;
+            obstacles.push({ type:'car', x: W() + 50, y: GROUND_Y(), w, h });
+        }
+
+        function spawnMissileWall() {
+            const missileCount = 6;
+            const h = 20 * scaleY;
+            const w = 90 * scaleX;
+            const gap = h * 0.8; // Increased gap
+
+            // Calculate ducked car height to position missiles correctly
+            const duckedBodyH = (CAR.h * 0.5) * 0.6;
+            const duckedCabH = duckedBodyH * 0.9;
+            const duckedCarTopY = GROUND_Y() - duckedCabH;
+
+            // Position the lowest missile so the player must duck
+            const clearance = 10 * scaleY; // Small safe area
+            const lowestMissileBottomY = duckedCarTopY - clearance;
+            let startY = lowestMissileBottomY - h; // Top Y of the lowest missile
+
+            for (let i = 0; i < missileCount; i++) {
+                obstacles.push({ type: 'plane', x: W() + 50, y: startY, w, h });
+                startY -= (h + gap); // Stack upwards
+            }
+        }
+        
+        function tickPhysics(dt) {
+            const timeScale = dt / 16.67; // Normalize physics to a 60 FPS baseline
+            const ACCEL_RATE = 0.04;
+            if (inputState.right) speedModifier = Math.min(1.25, speedModifier + ACCEL_RATE * timeScale);
+            else if (inputState.left) speedModifier = Math.max(0.75, speedModifier - ACCEL_RATE * timeScale);
+            else speedModifier += (1.0 - speedModifier) * 0.1 * timeScale;
+            
+            if (!CAR.grounded) {
+                CAR.vy = Math.min(CAR.vy + GRAVITY * timeScale, MAX_FALL); 
+                CAR.y += CAR.vy * timeScale;
+                if (CAR.y >= GROUND_Y()) {
+                    CAR.y = GROUND_Y(); CAR.vy = 0; CAR.grounded = true;
+                    createParticle(CAR.x() + CAR.w / 2, CAR.y + CAR.h, 10, '#fff', 1, 3);
+                }
+            }
+            CAR.duckLerp += ((CAR.ducking ? 1 : 0) - CAR.duckLerp) * 0.2 * timeScale;
+            
+            speed = (BASE_SPEED * scaleX) * difficulty * speedModifier;
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const o = obstacles[i];
+                o.x -= speed * timeScale;
+                if (o.x + o.w < -50) obstacles.splice(i, 1);
+            }
+            
+            const hb = CAR.hitbox();
+            for (const o of obstacles) {
+                if (hb.x < o.x + o.w && hb.x + hb.w > o.x && hb.y < o.y + o.h && hb.y + hb.h > o.y) {
+                    gameOver(); return;
+                }
+            }
+            difficulty += 0.0001 * timeScale;
+        }
+
+        function gameOver() {
+            if (gameState === 'gameover') return;
+            gameState = 'gameover';
+            finalScoreEl.textContent = Math.floor(score);
+            gameOverScreen.classList.add('visible');
+            createParticle(CAR.x() + CAR.w / 2, CAR.y, 50, colors.neonGreen, 3, 8);
+
+            let countdown = 3;
+            countdownMessageEl.textContent = `Returning home in ${countdown}...`;
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    countdownMessageEl.textContent = `Returning home in ${countdown}...`;
+                } else {
+                    countdownMessageEl.textContent = `Returning home...`;
+                    clearInterval(countdownInterval);
+                    window.location.href = '/';
+                }
+            }, 1000);
+        }
+
+        function resetGame() {
+            score = 0; difficulty = 1; speed = BASE_SPEED * scaleX; obstacles = []; particles = [];
+            CAR.y = GROUND_Y(); CAR.vy = 0; CAR.grounded = true;
+            CAR.ducking = false; CAR.duckLerp = 0; spawnTimer = 1000;
+            inputState.left = false; inputState.right = false; speedModifier = 1.0;
+        }
+
+        function startGame() {
+            resetGame();
+            gameState = 'playing';
+            loop();
+        }
+
+        function tryJump() { if (CAR.grounded) { CAR.vy = JUMP_VY; CAR.grounded = false; CAR.ducking = false; } }
+        function cancelJump() { if (!CAR.grounded && CAR.vy < 0) { CAR.vy *= JUMP_CANCEL_VY_MULT; } }
+        function onKey(down, e) {
+            if(gameState !== 'playing') return;
+            switch(e.code) {
+                case 'ArrowUp': case 'Space': case 'KeyW':
+                    if (down) tryJump(); else cancelJump();
+                    e.preventDefault(); break;
+                case 'ArrowDown': case 'KeyS':
+                    CAR.ducking = down && CAR.grounded;
+                    e.preventDefault(); break;
+                case 'ArrowLeft': case 'KeyA':
+                    inputState.left = down;
+                    e.preventDefault(); break;
+                case 'ArrowRight': case 'KeyD':
+                    inputState.right = down;
+                    e.preventDefault(); break;
+            }
+        }
+        
+        function init() {
+            resize(); CAR.y = GROUND_Y();
+            for(let i=0; i<90; i++) bg.stars.push({x: Math.random() * W(), y: Math.random() * H() * 0.6, s: Math.random()*2+1});
+            
+            document.addEventListener('keydown', e => onKey(true, e));
+            document.addEventListener('keyup', e => onKey(false, e));
+
+            const btnUp = document.getElementById('btn-up');
+            const btnDn = document.getElementById('btn-dn');
+            const btnLeft = document.getElementById('btn-left');
+            const btnRight = document.getElementById('btn-right');
+            
+            btnUp.addEventListener('pointerdown', tryJump);
+            btnUp.addEventListener('pointerup', cancelJump);
+            btnDn.addEventListener('pointerdown', () => { if(CAR.grounded) CAR.ducking = true; });
+            btnDn.addEventListener('pointerup', () => CAR.ducking = false);
+            btnLeft.addEventListener('pointerdown', () => inputState.left = true);
+            btnLeft.addEventListener('pointerup', () => inputState.left = false);
+            btnRight.addEventListener('pointerdown', () => inputState.right = true);
+            btnRight.addEventListener('pointerup', () => inputState.right = false);
+            
+            startGame();
+        }
+
+        let lastTime = 0;
+        function loop(time = 0) {
+            if (gameState !== 'playing') {
+                requestAnimationFrame(loop);
+                return;
+            }
+            if (lastTime === 0) {
+                lastTime = time;
+            }
+            const dt = time - lastTime;
+            lastTime = time;
+
+            if (dt > 0) { // Ensure dt is positive to avoid issues
+                scheduleSpawn(dt);
+                tickPhysics(dt);
+                score += (dt / 1000) * 10 * difficulty * difficulty * speedModifier;
+            }
+            
+            scoreEl.textContent = String(Math.floor(score));
+            drawBackground();
+            drawRoad();
+            for (const o of obstacles) drawObstacle(o);
+            drawPlayerCar(CAR.duckLerp);
+            updateAndDrawParticles();
+            requestAnimationFrame(loop);
+        }
+        init();
+    })();
+    </script>
+</body>
+</html>
+

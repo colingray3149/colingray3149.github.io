@@ -1,0 +1,159 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+<BaseLayout title="CV — Colin Gray">
+  <div class="wrap">
+    <div class="cv-header">
+      <h1 class="page-title">Curriculum Vitae</h1>
+      <a href="/colin_gray_resume.pdf" class="download-button" download>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download PDF
+      </a>
+    </div>
+
+    <!-- Personal Information -->
+    <div class="cyber-box cv-section">
+      <h2 class="section-title">Personal Information</h2>
+      <div class="info-grid">
+        <p><strong>Full Name:</strong> Colin Gray</p>
+        <p><strong>Email:</strong> gray.d.colin@gmail.com</p>
+        <p><strong>LinkedIn:</strong> linkedin.com/in/colingray3149</p>
+        <p><strong>GitHub:</strong> github.com/colingray3149</p>
+      </div>
+    </div>
+
+    <!-- Education -->
+    <div class="cyber-box cv-section">
+      <h2 class="section-title">Education</h2>
+      <div class="entry">
+        <h3 class="entry-title">Bachelor of Science in Chemical Engineering</h3>
+        <p class="entry-subtitle">California Institute of Technology (Caltech), Pasadena, CA</p>
+        <p class="entry-duration">Expected Graduation: May 2026</p>
+        <ul>
+          <li>Focus on Computational Fluid Dynamics and Reaction Engineering.</li>
+          <li>Relevant Coursework: Transport Phenomena, Chemical Kinetics, Thermodynamics.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Work Experience -->
+    <div class="cyber-box cv-section">
+      <h2 class="section-title">Work Experience</h2>
+      <div class="entry">
+        <h3 class="entry-title">Research Assistant</h3>
+        <p class="entry-subtitle">Combustion Research Lab, Caltech</p>
+        <p class="entry-duration">Summer 2024 – Present</p>
+        <ul>
+          <li>Developed Python scripts to automate data processing from high-speed flame imaging.</li>
+          <li>Assisted in the setup and execution of experiments on autoignition phenomena.</li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- You can copy/paste the .cv-section divs for all your other sections -->
+    <!-- For example: -->
+    <div class="cyber-box cv-section">
+        <h2 class="section-title">Certifications</h2>
+        <div class="entry">
+            <h3 class="entry-title">Certified SOLIDWORKS Associate (CSWA)</h3>
+            <p class="entry-subtitle">Dassault Systèmes</p>
+            <p class="entry-duration">Issued: Jan 2023</p>
+        </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<style>
+  .cv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .page-title {
+    background: linear-gradient(135deg, var(--pink), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .download-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border: 2px solid var(--line-bright);
+    border-radius: 8px;
+    background: var(--panel-2);
+    color: var(--cyan);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  .download-button:hover {
+    background: var(--glow-cyan);
+    border-color: var(--cyan);
+    color: var(--text);
+    transform: translateY(-2px);
+  }
+
+  .cv-section {
+    margin-bottom: 24px;
+    padding: 32px;
+  }
+  .section-title {
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, var(--cyan), var(--pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+    color: var(--text-secondary);
+  }
+  .entry {
+    margin-bottom: 20px;
+  }
+  .entry:last-child {
+    margin-bottom: 0;
+  }
+  .entry-title {
+    color: var(--pink);
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+  }
+  .entry-subtitle {
+    color: var(--muted);
+    font-weight: 500;
+    margin: 0;
+  }
+  .entry-duration {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 4px 0 16px 0;
+  }
+  .entry ul {
+    list-style-type: none;
+    padding-left: 20px;
+    margin: 0;
+    color: var(--text-secondary);
+  }
+  .entry ul li {
+    position: relative;
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .entry ul li::before {
+    content: '→';
+    position: absolute;
+    left: -20px;
+    color: var(--cyan);
+  }
+</style>

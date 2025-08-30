@@ -1,0 +1,110 @@
+---
+const { date, imageSrc, description } = Astro.props;
+---
+<div class="timeline-item">
+  <div class="timeline-dot"></div>
+  <div class="timeline-row">
+    <a href={imageSrc} class="timeline-image-container" data-description={description}>
+      <div class="image-border">
+        <img src={imageSrc} alt={description} loading="lazy" class="timeline-image" />
+      </div>
+    </a>
+    <div class="timeline-content">
+      {date && <time class="timeline-date">{date}</time>}
+      <div class="content-body">
+        <slot />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .timeline-item {
+    position: relative;
+    padding: 20px 0;
+  }
+  .timeline-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .timeline-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    background: var(--cyan);
+    border: 3px solid var(--panel-elevated);
+    border-radius: 50%;
+    z-index: 1;
+    box-shadow: 0 0 10px var(--glow-cyan);
+  }
+  .timeline-content, .timeline-image-container {
+    width: calc(50% - 12px); /* 50% minus half the gap */
+  }
+  /* Alternate the order for even items */
+  .timeline-item:nth-child(even) .timeline-row {
+    flex-direction: row-reverse;
+  }
+
+  /* Image styles */
+  .timeline-image-container {
+    cursor: pointer;
+    display: block;
+  }
+  .image-border {
+    position: relative;
+    border-radius: var(--radius-lg);
+    padding: 2px;
+    background: linear-gradient(45deg, var(--pink), var(--cyan));
+    background-size: 200% 200%;
+    animation: borderShift 4s ease-in-out infinite;
+  }
+  .timeline-image {
+    display: block;
+    width: 100%;
+    border-radius: calc(var(--radius-lg) - 2px);
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+
+  /* Text content styles */
+  .timeline-content {
+    background: rgba(20, 22, 32, 0.6);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .timeline-date {
+    font-weight: 600;
+    color: var(--cyan);
+    margin-bottom: 12px;
+    display: block;
+    font-size: 0.9rem;
+  }
+  .content-body {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* Responsive for mobile */
+  @media (max-width: 768px) {
+    .timeline-dot {
+      left: 0;
+      transform: translateY(-50%);
+    }
+    .timeline-item, .timeline-item:nth-child(even) .timeline-row {
+      padding-left: 30px; /* Space for the line */
+      flex-direction: column;
+    }
+    .timeline-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .timeline-content, .timeline-image-container {
+      width: 100%;
+    }
+  }
+</style>

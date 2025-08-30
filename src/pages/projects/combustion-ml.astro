@@ -1,0 +1,49 @@
+---
+import ProjectLayout from "../../layouts/ProjectLayout.astro";
+import Timeline from "../../components/Timeline.astro";
+import TimelineItem from "../../components/TimelineItem.astro";
+
+const frontmatter = {
+  title: "Combustion ML (Mechanism Reduction)",
+  subtitle: "L1 pruning, speedup & accuracy tradeoffs."
+};
+---
+<ProjectLayout frontmatter={frontmatter}>
+  <div slot="summary">
+    <h2>Project Overview</h2>
+    <p>This is where the main summary, key findings, graphs, and results will go. This content is visible immediately when the page loads.</p>
+  </div>
+
+  <div slot="timeline">
+    <Timeline>
+      <TimelineItem 
+        date="Week 1: Initial Research" 
+        imageSrc="/temp.jpg" 
+        description="A placeholder image showing the research phase.">
+        <p>Started by reviewing existing literature on L1 pruning techniques for neural networks.</p>
+      </TimelineItem>
+
+      <TimelineItem 
+        date="Week 2: Model Setup" 
+        imageSrc="/temp.jpg" 
+        description="A placeholder image for the model setup.">
+        <p>Implemented the baseline combustion model in Python using Cantera. Established performance metrics.</p>
+      </TimelineItem>
+
+      <TimelineItem date="Week 3" imageSrc="/temp.jpg" description="Placeholder Description 3"><p>Placeholder text for tick #3.</p></TimelineItem>
+      <TimelineItem date="Week 4" imageSrc="/temp.jpg" description="Placeholder Description 4"><p>Placeholder text for tick #4.</p></TimelineItem>
+      <TimelineItem date="Week 5" imageSrc="/temp.jpg" description="Placeholder Description 5"><p>Placeholder text for tick #5.</p></TimelineItem>
+      <TimelineItem date="Week 6" imageSrc="/temp.jpg" description="Placeholder Description 6"><p>Placeholder text for tick #6.</p></TimelineItem>
+      <TimelineItem date="Week 7" imageSrc="/temp.jpg" description="Placeholder Description 7"><p>Placeholder text for tick #7.</p></TimelineItem>
+      <TimelineItem date="Week 8" imageSrc="/temp.jpg" description="Placeholder Description 8"><p>Placeholder text for tick #8.</p></TimelineItem>
+      <TimelineItem date="Week 9" imageSrc="/temp.jpg" description="Placeholder Description 9"><p>Placeholder text for tick #9.</p></TimelineItem>
+
+      <TimelineItem 
+        date="Week 10: Final Report" 
+        imageSrc="/temp.jpg" 
+        description="A placeholder image for the final report.">
+        <p>Finalized the report, documenting the methodology, results, and potential avenues for future research.</p>
+      </TimelineItem>
+    </Timeline>
+  </div>
+</ProjectLayout>

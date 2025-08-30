@@ -1,0 +1,121 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import ImageModal from '../components/ImageModal.astro'; // Import the new modal
+const { frontmatter } = Astro.props;
+---
+<BaseLayout title={`${frontmatter.title} — Colin Gray`}>
+  <div class="wrap">
+    <h1 class="project-title">{frontmatter.title}</h1>
+    <p class="project-subtitle text-muted">{frontmatter.subtitle}</p>
+
+    <div class="cyber-box summary-box">
+      <slot name="summary" />
+    </div>
+
+    <div class="timeline-toggle">
+      <button id="timeline-btn" class="cyber-button">Show Project Timeline</button>
+    </div>
+
+    <section id="timeline-section" class="timeline-section">
+      <h2 class="section-title">Timeline</h2>
+      <slot name="timeline" />
+    </section>
+  </div>
+
+  <ImageModal />
+  <a id="return-to-top-btn" href="#" title="Return to top">&uarr;</a>
+</BaseLayout>
+
+<style>
+  .project-title { text-align: center; margin-bottom: 8px; }
+  .project-subtitle { text-align: center; margin-bottom: 40px; }
+  .summary-box { padding: 32px; }
+  .timeline-toggle { text-align: center; margin: 40px 0; }
+  .section-title { text-align: center; margin-bottom: 40px; }
+  .timeline-section { display: none; }
+  .timeline-section.visible { display: block; }
+  .cyber-button { background: transparent; border: 2px solid var(--line-bright); color: var(--cyan); padding: 12px 24px; font-size: 1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+  .cyber-button:hover { background: var(--glow-cyan); box-shadow: 0 0 15px var(--glow-cyan); border-color: var(--cyan); }
+
+  /* Styles for the new "Return to Top" button */
+  #return-to-top-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--panel-elevated);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 50%;
+    color: var(--cyan);
+    font-size: 2rem;
+    border: 2px solid var(--line-bright);
+    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 500;
+  }
+  #return-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+  #return-to-top-btn:hover {
+    background: var(--glow-cyan);
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Timeline toggle button logic (existing)
+    const timelineBtn = document.getElementById('timeline-btn');
+    const timelineSection = document.getElementById('timeline-section');
+    if (timelineBtn && timelineSection) {
+      timelineBtn.addEventListener('click', () => {
+        const isVisible = timelineSection.classList.toggle('visible');
+        timelineBtn.textContent = isVisible ? 'Hide Project Timeline' : 'Show Project Timeline';
+      });
+    }
+
+    // Image Modal logic (new)
+    const modal = document.getElementById('image-modal');
+    const modalImage = document.getElementById('modal-image');
+    const modalDesc = document.getElementById('modal-description');
+    const closeModalBtn = document.getElementById('modal-close');
+    const clickableImages = document.querySelectorAll('.timeline-image-container');
+
+    clickableImages.forEach(container => {
+      container.addEventListener('click', (e) => {
+        e.preventDefault();
+        const img = container.querySelector('img');
+        modalImage.src = img.src;
+        modalDesc.textContent = container.dataset.description;
+        modal.classList.add('visible');
+      });
+    });
+
+    const closeModal = () => modal.classList.remove('visible');
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+
+    // Return to Top button logic (new)
+    const topBtn = document.getElementById('return-to-top-btn');
+    if(topBtn) {
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          topBtn.classList.add('visible');
+        } else {
+          topBtn.classList.remove('visible');
+        }
+      });
+      topBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  });
+</script>
