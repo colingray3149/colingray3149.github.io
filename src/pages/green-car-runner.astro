@@ -361,14 +361,26 @@
         }
 
         function drawRoad() {
-            const y = H() - ROAD_HEIGHT;
-            ctx.fillStyle = colors.road; ctx.fillRect(0, y, W(), ROAD_HEIGHT);
-            ctx.strokeStyle = colors.roadLine; ctx.lineWidth = 2 * scaleY;
-            ctx.setLineDash([24 * scaleX, 12 * scaleX]);
-            ctx.lineDashOffset = -(performance.now() * 0.001 * speed);
-            ctx.beginPath(); ctx.moveTo(0, y + ROAD_HEIGHT/2); ctx.lineTo(W(), y + ROAD_HEIGHT/2);
-            ctx.stroke(); ctx.setLineDash([]);
+          // Center the road rectangle on the physics ground line
+          const center = GROUND_Y();
+          const top = center - ROAD_HEIGHT / 2;
+        
+          // road surface
+          ctx.fillStyle = colors.road;
+          ctx.fillRect(0, top, W(), ROAD_HEIGHT);
+        
+          // dashed center line
+          ctx.strokeStyle = colors.roadLine;
+          ctx.lineWidth = 2 * scaleY;
+          ctx.setLineDash([24 * scaleX, 12 * scaleX]);
+          ctx.lineDashOffset = -(performance.now() * 0.001 * speed);
+          ctx.beginPath();
+          ctx.moveTo(0, center);
+          ctx.lineTo(W(), center);
+          ctx.stroke();
+          ctx.setLineDash([]);
         }
+
 
         function scheduleSpawn(dt) {
             spawnTimer -= dt;
@@ -397,7 +409,7 @@
 
             // Position the lowest missile so the player must duck
             const clearance = 10 * scaleY; // Small safe area
-            const lowestMissileBottomY = duckedCarTopY - clearance  + 5;
+            const lowestMissileBottomY = duckedCarTopY - clearance  + 15;
             let startY = lowestMissileBottomY - h; // Top Y of the lowest missile
 
             for (let i = 0; i < missileCount; i++) {

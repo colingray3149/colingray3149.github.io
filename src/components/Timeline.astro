@@ -24,4 +24,12 @@
     border-radius: 3px;
     box-shadow: 0 0 10px var(--glow-cyan);
   }
+
+  @media (max-width: 768px) {
+  .timeline-container::before {
+    left: 20px;           /* put the spine 20px from the left edge */
+    transform: none;      /* no centering transform on mobile */
+  }
+}
+
 </style>

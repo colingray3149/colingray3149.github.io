@@ -92,13 +92,16 @@ const { date, imageSrc, description } = Astro.props;
   /* Responsive for mobile */
   @media (max-width: 768px) {
     .timeline-dot {
-      left: 0;
-      transform: translateY(-50%);
+      left: 20px;                      /* matches the line’s position */
+      transform: translate(-50%, -50%);/* keep it centered on the spine */
     }
-    .timeline-item, .timeline-item:nth-child(even) .timeline-row {
-      padding-left: 30px; /* Space for the line */
+    
+    .timeline-item,
+    .timeline-item:nth-child(even) .timeline-row {
+      padding-left: 48px; /* room for the 20px line + dot + breathing space */
       flex-direction: column;
     }
+
     .timeline-row {
       flex-direction: column;
       align-items: stretch;

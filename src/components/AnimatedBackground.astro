@@ -293,20 +293,30 @@
     // ---------- INIT / RESIZE ----------
     const resizeCanvas = (() => {
       let raf = 0;
-      const doResize = () => {
+      let lastW = 0, lastH = 0;
+    
+      return () => {
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
           const vw = Math.round(window.innerWidth);
-          const vh = Math.round(window.visualViewport ? window.visualViewport.height : window.innerHeight);
+          const vh = Math.round(window.innerHeight);
+    
+          // Ignore tiny height-only changes (URL bar show/hide) to prevent jitter.
+          const heightDelta = Math.abs(vh - lastH);
+          if (vw === lastW && heightDelta < 80) return;
+    
+          lastW = vw; lastH = vh;
+    
           canvas.width  = vw;
           canvas.height = vh;
+    
           computeMountains();
           generateBuildings();
           generateStars();
         });
       };
-      return doResize;
     })();
+
 
 
     // ---------- BUILDINGS ----------
@@ -1075,8 +1085,13 @@ const drawCar = (c) => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
 
-    window.addEventListener('orientationchange', resizeCanvas, { passive: true });
-    window.visualViewport?.addEventListener('resize', resizeCanvas, { passive: true });
+    window.addEventListener('resize', resizeCanvas, { passive: true });
+    window.addEventListener('orientationchange', () => {
+  // force next call to actually resize
+    resizeCanvas();
+    }, { passive: true });
+
+
     canvas.style.pointerEvents = 'none';
 
     const onDocActivate = (e) => {

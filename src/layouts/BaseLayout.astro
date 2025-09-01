@@ -342,6 +342,34 @@ const { title = "Colin Gray", description = "Combustion | CFD | ML" } = Astro.pr
       html.city-mode-on .city-mode-bg:has(h1) {
         margin-bottom: 0; /* No margin between the wrapped elements */
       }
+
+    /* --- Mobile header fit & overflow prevention --- */
+    @media (max-width: 420px) {
+      .wrap { padding-left: 12px; padding-right: 12px; }
+    
+      .header-content { gap: 10px; }
+      .brand { font-size: 1.15rem; }
+    
+      .header-right { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+      .nav { gap: 6px; }
+    
+      .nav-item {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+    
+      /* Scale down the two toggles so they never push the row wider than the screen */
+      .header-right > :is(*) {
+        transform: scale(.9);
+        transform-origin: right center;
+      }
+    }
+    
+    @media (max-width: 340px) {
+      .nav-item { padding: 6px 10px; font-size: .75rem; }
+      .header-right > :is(*) { transform: scale(.8); }
+    }
+
       
       
     </style>
