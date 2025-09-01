@@ -18,7 +18,16 @@
     opacity: 0;
     transition: opacity 0.5s ease;
     pointer-events: none;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    width: 100%;
+    height: 100vh;
   }
+    @supports (height: 100svh) {
+     #scrolling-background { height: 100svh; }
+   }
+
   html.city-mode-on #scrolling-background {
     display: block;
     opacity: 1;
@@ -282,13 +291,23 @@
     };
 
     // ---------- INIT / RESIZE ----------
-    const resizeCanvas = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      computeMountains();
-      generateBuildings();
-      generateStars();
-    };
+    const resizeCanvas = (() => {
+      let raf = 0;
+      const doResize = () => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const vw = Math.round(window.innerWidth);
+          const vh = Math.round(window.visualViewport ? window.visualViewport.height : window.innerHeight);
+          canvas.width  = vw;
+          canvas.height = vh;
+          computeMountains();
+          generateBuildings();
+          generateStars();
+        });
+      };
+      return doResize;
+    })();
+
 
     // ---------- BUILDINGS ----------
     const pickHeight = (isTall) => {
@@ -1056,7 +1075,8 @@ const drawCar = (c) => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
 
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', resizeCanvas, { passive: true });
+    window.visualViewport?.addEventListener('resize', resizeCanvas, { passive: true });
     canvas.style.pointerEvents = 'none';
 
     const onDocActivate = (e) => {
