@@ -107,4 +107,31 @@ const { date, imageSrc, description } = Astro.props;
       width: 100%;
     }
   }
+
+        /* Keep both sides exactly even on all viewports */
+      .timeline-content,
+      .timeline-image-container {
+        flex: 1 1 0;        /* equal columns */
+        width: auto;        /* let flex control the width */
+      }
+      
+      /* Make image sizing deterministic across devices */
+      .timeline-image-container { display: block; }
+      .timeline-image {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;   /* consistent height */
+        object-fit: cover;
+      }
+
+    /* Light theme: lighter panel and darker text for readability */
+    html.light-theme .timeline-content {
+      background: #f2f2f2;
+      color: #1a1a1a;
+    }
+    html.light-theme .timeline-date { color: #1a1a1a; }
+    html.light-theme .content-body { color: #333333; }
+
+
 </style>
