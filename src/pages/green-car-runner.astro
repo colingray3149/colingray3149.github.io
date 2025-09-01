@@ -181,13 +181,16 @@
         const W = () => canvas.width;
         const ROAD_HEIGHT = 60 * scaleY;
         const GROUND_Y_OFFSET = -12 * scaleY;
+        
         const GROUND_Y = () => {
           if (isMobile()) {
-            // Put the road around ~60% of the screen height for easier controls
-            return Math.floor(H() * 0.62);
+            // Put the ground line higher (closer to mid screen)
+            return Math.floor(H() * 0.72);  // tweak % if too high/low
           }
+          // Desktop stays the same
           return H() - ROAD_HEIGHT + GROUND_Y_OFFSET;
-        };        
+        };
+             
         const GRAVITY = 0.55 * scaleY;
         const JUMP_VY = -14.5 * scaleY;
         const JUMP_CANCEL_VY_MULT = 0.4;
@@ -394,7 +397,7 @@
 
             // Position the lowest missile so the player must duck
             const clearance = 10 * scaleY; // Small safe area
-            const lowestMissileBottomY = duckedCarTopY - clearance;
+            const lowestMissileBottomY = duckedCarTopY - clearance  + 5;
             let startY = lowestMissileBottomY - h; // Top Y of the lowest missile
 
             for (let i = 0; i < missileCount; i++) {
