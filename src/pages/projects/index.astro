@@ -1,21 +1,60 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import ProjectCard from "../../components/ProjectCard.astro";
+import ProjectCardLarge from "../../components/ProjectCardLarge.astro";
 
-// This array defines the cards shown on this page
+// Bigger, richer cards just for THIS page
 const projects = [
-  { title: "Combustion ML (Mechanism Reduction)", href: "/projects/combustion-ml/", blurb: "L1 pruning, speedup & accuracy tradeoffs" },
-  { title: "ANSYS Fluent — Scramjet Cold-Flow", href: "/projects/ansys-coldflow/", blurb: "2D geometry, mesh study, baseline solution" },
-  { title: "FDS/PyroSim — Dresser Fire", href: "/projects/fds-dresser-fire/", blurb: "HRRPUA & vent sensitivity" },
-  { title: "Autoignition Temperature Research", href: "/projects/autoignition-research/", blurb: "Summer research notes & findings" },
+  {
+    title: "Combustion ML (Mechanism Reduction)",
+    href: "/projects/combustion-ml/",
+    blurb: "L1 pruning, speedup & accuracy tradeoffs",
+    desc: "Using L1/Lasso-based feature selection and mask pruning to shrink mechanisms while preserving predictive power on methane combustion datasets.",
+    img: "/images/projects/combustion-ml.jpg",
+    imgAlt: "Combustion ML charts",
+  },
+  {
+    title: "ANSYS Fluent — Scramjet Cold-Flow",
+    href: "/projects/ansys-coldflow/",
+    blurb: "2D geometry, mesh study, baseline solution",
+    desc: "Baseline 2D cold-flow setup with mesh sensitivity and key field visualizations to establish a reference before reacting cases.",
+    img: "/images/projects/ansys-coldflow.jpg",
+    imgAlt: "ANSYS Fluent cold-flow contours",
+  },
+  {
+    title: "FDS/PyroSim — Dresser Fire",
+    href: "/projects/fds-dresser-fire/",
+    blurb: "HRRPUA & vent sensitivity",
+    desc: "Exploration of HRRPUA assumptions and venting configurations in a small enclosure; comparison against sensitivity ranges.",
+    img: "/images/projects/fds-dresser-fire.jpg",
+    imgAlt: "FDS/PyroSim smoke & heat maps",
+  },
+  {
+    title: "Autoignition Temperature Research",
+    href: "/projects/autoignition-research/",
+    blurb: "Summer research notes & findings",
+    desc: "Notes on methodology, apparatus constraints, and literature integration for AIT estimation and comparison.",
+    img: "/images/projects/autoignition.jpg",
+    imgAlt: "Autoignition research illustration",
+  },
+  {
+    title: "Shadowing & Field Notes — Pyrotechnics/Blasting",
+    href: "/projects/shadowing-notes/",
+    blurb: "Applied safety, logistics, and observations",
+    desc: "Selected field observations on safety procedures, charge placement, debris control, and permitting workflows.",
+    img: "/images/projects/shadowing.jpg",
+    imgAlt: "Field notebook and PPE",
+  },
 ];
 ---
+
 <BaseLayout title="Projects — Colin Gray">
   <div class="wrap">
     <h1 class="page-title">Projects</h1>
     <p class="page-subtitle text-muted">A collection of my work in combustion, CFD, and machine learning.</p>
-    <div class="projects-grid">
-      {projects.map(project => <ProjectCard project={project} />)}
+    <div class="projects-shell">
+        <div class="projects-grid">
+        {projects.map((project) => <ProjectCardLarge project={project} />)}
+        </div>
     </div>
   </div>
 </BaseLayout>
@@ -31,14 +70,39 @@ const projects = [
   }
   .page-subtitle {
     text-align: center;
-    margin-bottom: 60px;
-    max-width: 50ch;
+    margin-bottom: 48px;
+    max-width: 58ch;
     margin-left: auto;
     margin-right: auto;
   }
+
+/* Center the grid and limit total width to ~2/3 of the viewport */
+.projects-shell {
+  /* cap the absolute width so giant screens don’t make the cards too wide */
+  max-width: min(1100px, 66vw);
+  margin: 0 auto;          /* center shell */
+}
+
+/* default: single column on small screens */
+.projects-grid {
+  display: grid;
+  gap: 36px;                /* generous space between cards */
+  grid-template-columns: 1fr;
+}
+
+/* desktop/tablet: exactly two columns */
+@media (min-width: 900px) {
   .projects-grid {
-    display: grid;
-    gap: 24px;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* Optional: if you want the lone last card centered on the final row */
+.projects-grid > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;     /* span both columns */
+  justify-self: center;
+  max-width: 620px;        /* keep it from stretching too wide */
+  width: 100%;
+}
+
 </style>

@@ -409,7 +409,7 @@
 
             // Position the lowest missile so the player must duck
             const clearance = 10 * scaleY; // Small safe area
-            const lowestMissileBottomY = duckedCarTopY - clearance  + 15;
+            const lowestMissileBottomY = duckedCarTopY - clearance  + 10;
             let startY = lowestMissileBottomY - h; // Top Y of the lowest missile
 
             for (let i = 0; i < missileCount; i++) {

@@ -1,0 +1,91 @@
+---
+/**
+ * Props:
+ *  - project: {
+ *      title: string
+ *      href: string
+ *      blurb?: string
+ *      desc?: string          // longer description (optional)
+ *      img?: string           // path under /public, e.g. "/images/projects/combustion-ml.jpg"
+ *      imgAlt?: string
+ *    }
+ */
+const { project } = Astro.props;
+---
+
+<a href={project.href} class="project-card-large cyber-box">
+  {project.img && (
+    <div class="card-media">
+      <img src={project.img} alt={project.imgAlt || project.title} loading="lazy" />
+    </div>
+  )}
+
+  <div class="card-body">
+    <h3 class="title">{project.title}</h3>
+    {project.blurb && <p class="blurb">{project.blurb}</p>}
+    {project.desc && <p class="desc">{project.desc}</p>}
+  </div>
+
+  <div class="card-footer">
+    <span class="link">View Project →</span>
+  </div>
+</a>
+
+<style>
+  .project-card-large {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    text-decoration: none;
+    transition: transform 0.25s ease;
+    overflow: hidden;
+    min-height: 280px;              /* more presence */
+  }
+  .project-card-large:hover { transform: translateY(-4px); }
+
+  .card-media {
+    width: 100%;
+    aspect-ratio: 16/9;             /* consistent banner ratio */
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .card-body {
+    padding: 18px 18px 0 18px;
+    text-align: left;
+  }
+  .title {
+    margin: 0 0 8px 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .blurb {
+    margin: 0 0 8px 0;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .desc {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text);
+    opacity: 0.9;
+  }
+
+  .card-footer {
+    padding: 16px 18px 18px 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .link {
+    color: var(--cyan);
+    font-weight: 600;
+  }
+  .project-card-large:hover .link { color: var(--pink); }
+</style>
