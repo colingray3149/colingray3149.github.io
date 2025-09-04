@@ -5,43 +5,43 @@ import ProjectCardLarge from "../../components/ProjectCardLarge.astro";
 // Bigger, richer cards just for THIS page
 const projects = [
   {
-    title: "Combustion ML (Mechanism Reduction)",
+    title: "(Summer 2026) Combustion Reaction Mechanism Pruning with Machine Learning",
     href: "/projects/combustion-ml/",
-    blurb: "L1 pruning, speedup & accuracy tradeoffs",
-    desc: "Using L1/Lasso-based feature selection and mask pruning to shrink mechanisms while preserving predictive power on methane combustion datasets.",
+    blurb: "The Sisyphean task of data generating and processing",
+    desc: "Began as using LASSO (L1-pruning) feature selection to perform species reduction, and has evolved to using gates to register output importance at various times.",
     img: "/images/projects/combustion-ml.jpg",
     imgAlt: "Combustion ML charts",
   },
   {
     title: "ANSYS Fluent — Scramjet Cold-Flow",
     href: "/projects/ansys-coldflow/",
-    blurb: "2D geometry, mesh study, baseline solution",
-    desc: "Baseline 2D cold-flow setup with mesh sensitivity and key field visualizations to establish a reference before reacting cases.",
+    blurb: "I just finished the Ansys CFD tutorial",
+    desc: "This software is much more nontrivial than I imagined, and I had to take a break to make the portfolio which took almost 6 days.",
     img: "/images/projects/ansys-coldflow.jpg",
     imgAlt: "ANSYS Fluent cold-flow contours",
   },
   {
     title: "FDS/PyroSim — Dresser Fire",
     href: "/projects/fds-dresser-fire/",
-    blurb: "HRRPUA & vent sensitivity",
-    desc: "Exploration of HRRPUA assumptions and venting configurations in a small enclosure; comparison against sensitivity ranges.",
+    blurb: "Running one simulation takes my laptop 24 hours",
+    desc: "My first main CAD experience since learning Creo in high school for robotics. I overestimated the resolution I could run, struggled through creating the fire, meshing, applying materials, and finally getting good data.",
     img: "/images/projects/fds-dresser-fire.jpg",
     imgAlt: "FDS/PyroSim smoke & heat maps",
   },
   {
-    title: "Autoignition Temperature Research",
+    title: "(Summer 2025) Jet Fuel Autoignition Research Internship",
     href: "/projects/autoignition-research/",
-    blurb: "Summer research notes & findings",
-    desc: "Notes on methodology, apparatus constraints, and literature integration for AIT estimation and comparison.",
+    blurb: "Staring at a flask for minutes to see a <1 second ignition",
+    desc: "My first hands on experience with combustion, and learning how intricate and unpredictable it can be. Involved a ton of literature review, database aggregation, and justifying the purchases of expensive chemicals.",
     img: "/images/projects/autoignition.jpg",
     imgAlt: "Autoignition research illustration",
   },
   {
-    title: "Shadowing & Field Notes — Pyrotechnics/Blasting",
-    href: "/projects/shadowing-notes/",
-    blurb: "Applied safety, logistics, and observations",
-    desc: "Selected field observations on safety procedures, charge placement, debris control, and permitting workflows.",
-    img: "/images/projects/shadowing.jpg",
+    title: "Fireworks Wastewater Processing Plant",
+    href: "/projects/wastewater-processing/",
+    blurb: "Technically my first chemical processing plant",
+    desc: "Extremely thorough investigation of how fireworks are produced, byproducts, what the recommended environmental limit is, and how to get rid of them. Several assumptions were made to make it a feasible class project, but it still took over 25 hours.",
+    img: "/images/projects/fireworks-wastewater.jpg",
     imgAlt: "Field notebook and PPE",
   },
 ];
@@ -50,7 +50,7 @@ const projects = [
 <BaseLayout title="Projects — Colin Gray">
   <div class="wrap">
     <h1 class="page-title">Projects</h1>
-    <p class="page-subtitle text-muted">A collection of my work in combustion, CFD, and machine learning.</p>
+    <p class="page-subtitle text-muted">A collection of my work from internships, classes, and personal projects</p>
     <div class="projects-shell">
         <div class="projects-grid">
         {projects.map((project) => <ProjectCardLarge project={project} />)}

@@ -1,12 +1,15 @@
 ---
 const { date, imageSrc, description } = Astro.props;
+const altText = typeof description === 'string'
+  ? description.replace(/<[^>]*>/g, '') // strip any tags for alt text
+  : '';
 ---
 <div class="timeline-item">
   <div class="timeline-dot"></div>
   <div class="timeline-row">
     <a href={imageSrc} class="timeline-image-container" data-description={description}>
       <div class="image-border">
-        <img src={imageSrc} alt={description} loading="lazy" class="timeline-image" />
+        <img src={imageSrc} alt={altText} loading="lazy" class="timeline-image" />
       </div>
     </a>
     <div class="timeline-content">
@@ -41,9 +44,18 @@ const { date, imageSrc, description } = Astro.props;
     z-index: 1;
     box-shadow: 0 0 10px var(--glow-cyan);
   }
-  .timeline-content, .timeline-image-container {
-    width: calc(50% - 12px); /* 50% minus half the gap */
-  }
+  .timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.timeline-content,
+.timeline-image-container {
+  flex: 1 1 0;   /* equal columns, deterministic */
+  min-width: 0;  /* allows content to shrink without overflow */
+}
+
+
   /* Alternate the order for even items */
   .timeline-item:nth-child(even) .timeline-row {
     flex-direction: row-reverse;
@@ -65,16 +77,19 @@ const { date, imageSrc, description } = Astro.props;
   .timeline-image {
     display: block;
     width: 100%;
+    height: auto;
     border-radius: calc(var(--radius-lg) - 2px);
-    aspect-ratio: 16 / 10;
-    object-fit: cover;
+    /* Standardize default size without cropping */
+    max-height: var(--timeline-img-max, 360px);
+    object-fit: contain;     /* show the whole image */
   }
 
   /* Text content styles */
   .timeline-content {
-    background: rgba(20, 22, 32, 0.6);
+    background: rgba(20, 22, 32, 0.98);
     border-radius: var(--radius-lg);
-    padding: 20px;
+    padding: 24px;
+    backdrop-filter:staturate(110%) blur(10px);
   }
   .timeline-date {
     font-weight: 600;
@@ -89,44 +104,61 @@ const { date, imageSrc, description } = Astro.props;
     line-height: 1.6;
   }
 
-  /* Responsive for mobile */
-  @media (max-width: 768px) {
-    .timeline-dot {
-      left: 20px;                      /* matches the line’s position */
-      transform: translate(-50%, -50%);/* keep it centered on the spine */
-    }
-    
-    .timeline-item,
-    .timeline-item:nth-child(even) .timeline-row {
-      padding-left: 48px; /* room for the 20px line + dot + breathing space */
-      flex-direction: column;
-    }
+/* Let unusually tall images widen their column and hang out into the gutter */
+@media (min-width: 769px) {
+  .timeline-image-container.is-tall {
+    /* widen this column ~12% and push outward (away from the center line) */
+    width: calc(100% + 12%);
+  }
+  /* On odd items the image is on the LEFT; stick outward to the left */
+  .timeline-item:nth-child(odd) .timeline-image-container.is-tall {
+    margin-left: -12%;
+  }
+  /* On even items the image is on the RIGHT; stick outward to the right */
+  .timeline-item:nth-child(even) .timeline-image-container.is-tall {
+    margin-right: -12%;
+  }
+}
 
-    .timeline-row {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .timeline-content, .timeline-image-container {
-      width: 100%;
-    }
+/* Never cause horizontal scroll on phones */
+@media (max-width: 768px) {
+  .timeline-image-container.is-tall {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+
+  /* Responsive for mobile */
+@media (max-width: 768px) {
+  .timeline-dot {
+    left: 20px;
+    transform: translate(-50%, -50%);
   }
 
-        /* Keep both sides exactly even on all viewports */
-      .timeline-content,
-      .timeline-image-container {
-        flex: 1 1 0;        /* equal columns */
-        width: auto;        /* let flex control the width */
-      }
-      
-      /* Make image sizing deterministic across devices */
-      .timeline-image-container { display: block; }
-      .timeline-image {
-        display: block;
-        width: 100%;
-        height: auto;
-        aspect-ratio: 16 / 9;   /* consistent height */
-        object-fit: cover;
-      }
+  /* Always stack content vertically on mobile */
+  .timeline-item { padding-left: 48px; }
+  .timeline-item .timeline-row,
+  .timeline-item:nth-child(even) .timeline-row {
+    flex-direction: column;     /* no alternating order weirdness */
+    align-items: stretch;
+  }
+
+  /* Full width for both columns when stacked */
+  .timeline-content,
+  .timeline-image-container {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  /* Keep the same visual size ratio for images and panels */
+  .timeline-image {
+    aspect-ratio: 16 / 10;      /* same as desktop */
+  }
+}
+
+  
+
 
     /* Light theme: lighter panel and darker text for readability */
     html.light-theme .timeline-content {
