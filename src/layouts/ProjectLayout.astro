@@ -21,17 +21,21 @@ const { frontmatter } = Astro.props;
     </div>
 
     <div class="timeline-toggle">
-      <button id="timeline-btn" class="cyber-button">Show Project Timeline</button>
+      <button id="timeline-btn" class="cyber-button">Read About My Journey</button>
     </div>
 
     <section id="timeline-section" class="timeline-section">
+      <div class="cyber-box journey-box">
+        <slot name="journey" />
+      </div>
+
       <h2 class="section-title">Timeline (Click images for more information)</h2>
       <slot name="timeline" />
     </section>
   </div>
 
   <ImageModal />
-  <a id="return-to-top-btn" href="#" title="Return to top">&uarr;</a>
+  <a id="return-to-top-btn" href="#" title="Return to top">&uarr; Return to Top</a>
 </BaseLayout>
 
 <style>
@@ -84,13 +88,14 @@ const { frontmatter } = Astro.props;
   .project-subtitle { text-align: center; margin-bottom: 40px; }
   
   /* --- Summary Box & General Components (Unchanged) --- */
-  .summary-box { padding: 32px; }
+  .summary-box, .journey-box { padding: 32px; }
+  .journey-box { margin-bottom: 40px; }
   .timeline-toggle { text-align: center; margin: 40px 0; }
   .section-title { text-align: center; margin-bottom: 40px; }
   .timeline-section { display: none; }
   .timeline-section.visible { display: block; }
   .cyber-button {
-    background: var(--panel-2);               /* solid background for city/dark */
+    background: var(--panel-2);
     border: 2px solid var(--line-bright);
     color: var(--cyan);
     padding: 12px 24px;
@@ -101,16 +106,26 @@ const { frontmatter } = Astro.props;
     box-shadow: 0 0 0 transparent;
   }
   .cyber-button:hover {
-    background: var(--glow-cyan);             /* bright hover */
+    background: var(--glow-cyan);
     border-color: var(--cyan);
     color: var(--text);
     box-shadow: 0 0 12px var(--glow-cyan);
   }
   html.light-theme .cyber-button {
-    background: #f1f5f9;                      /* solid in light theme too */
+    background: #f1f5f9;
     color: #0f172a;
     border-color: #cbd5e1;
   }
+
+ /* Paragraphs: respect line breaks and indent for both summary and journey */
+:global(.summary-box p),
+:global(.journey-box p) {
+  white-space: pre-line;   /* show \n as visible line breaks */
+  text-indent: 1.75rem;    /* indent the first line of each paragraph */
+  margin: 0 0 1rem;        /* breathing room between paragraphs */
+}
+
+
 
   /* --- IMAGE GRID FINAL FIX (CSS GRID APPROACH) --- */
 /* Image grid — apply to slotted content via :global() so scoped CSS hits slots */
@@ -119,7 +134,6 @@ const { frontmatter } = Astro.props;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   margin-top: 32px;
-  /* No arbitrary max-width here; let the parent .project-content (max-width:1100px) control overall width */
 }
 
 :global(.image-grid .image-cell figure) {
@@ -130,11 +144,11 @@ const { frontmatter } = Astro.props;
   display: block;
   width: 100%;
   height: auto;
-  max-height: var(--grid-img-max, 360px);   /* same idea as timeline */
-  object-fit: contain;                      /* show full image */
+  max-height: var(--grid-img-max, 360px);
+  object-fit: contain;
   border-radius: 8px;
   border: 1px solid var(--line);
-  background: var(--panel-2);               /* nice letterbox for very tall images */
+  background: var(--panel-2);
 }
 
 
@@ -158,7 +172,6 @@ const { frontmatter } = Astro.props;
   }
 }
 
-
   
   /* --- Responsive Adjustments --- */
   @media (max-width: 820px) {
@@ -178,26 +191,27 @@ const { frontmatter } = Astro.props;
 
   }
 
-  /* Return to Top Button (Unchanged) */
+  /* Return to Top Button (UPDATED) */
   #return-to-top-btn {
     position: fixed;
     bottom: 20px;
     right: 20px;
     background: var(--panel-elevated);
-    width: 50px;
-    height: 50px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px; /* Space between arrow and text */
+    padding: 10px 18px; /* Padding for the pill shape */
     text-decoration: none;
-    border-radius: 50%;
+    border-radius: 999px; /* Pill shape */
     color: var(--cyan);
-    font-size: 2rem;
+    font-size: 0.9rem; /* Adjusted font size */
+    font-weight: 600;
     border: 2px solid var(--line-bright);
     transition: all 0.3s ease;
     opacity: 0;
     visibility: hidden;
     z-index: 500;
+    white-space: nowrap; /* Prevent text from wrapping */
   }
   #return-to-top-btn.visible {
     opacity: 1;
@@ -218,7 +232,7 @@ const { frontmatter } = Astro.props;
     if (timelineBtn && timelineSection) {
       timelineBtn.addEventListener('click', () => {
         const isVisible = timelineSection.classList.toggle('visible');
-        timelineBtn.textContent = isVisible ? 'Hide Project Timeline' : 'Show Project Timeline';
+        timelineBtn.textContent = isVisible ? 'Hide Journey & Timeline' : 'Read About My Journey';
       });
     }
 
@@ -235,7 +249,6 @@ const { frontmatter } = Astro.props;
         const img = container.querySelector('img');
         modalImage.src = img.src;
         modalDesc.innerHTML = container.dataset.description;
-        // (optional: open links in a new tab safely)
         modalDesc.querySelectorAll('a').forEach(a => {
           a.target = '_blank';
           a.rel = 'noopener noreferrer';
@@ -246,8 +259,8 @@ const { frontmatter } = Astro.props;
     });
 
     const closeModal = () => modal.classList.remove('visible');
-    closeModalBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
     // Return to Top button logic
     const topBtn = document.getElementById('return-to-top-btn');
@@ -265,19 +278,40 @@ const { frontmatter } = Astro.props;
       });
     }
 
-      // --- Tall-image tagging (both Timeline and Overview grid) ---
-  function markTall(img) {
-    const ratio = img.naturalWidth / img.naturalHeight;
-    // consider "tall" if portrait-ish (tweak threshold to taste)
-    if (ratio < 0.9) {
-      const tlContainer = img.closest('.timeline-image-container');
-      const gridCell = img.closest('.image-cell');
-      if (tlContainer) tlContainer.classList.add('is-tall');
-      if (gridCell) gridCell.classList.add('is-tall');
+    // --- Tall-image tagging (both Timeline and Overview grid) ---
+    function markTall(img) {
+      const ratio = img.naturalWidth / img.naturalHeight;
+      if (ratio < 0.9) {
+        const tlContainer = img.closest('.timeline-image-container');
+        const gridCell = img.closest('.image-cell');
+        if (tlContainer) tlContainer.classList.add('is-tall');
+        if (gridCell) gridCell.classList.add('is-tall');
+      }
     }
-  }
-  document.querySelectorAll('.timeline-image-container img, .image-grid .image-cell img')
-    .forEach(img => img.complete ? markTall(img) : img.addEventListener('load', () => markTall(img)));
+    document.querySelectorAll('.timeline-image-container img, .image-grid .image-cell img')
+      .forEach(img => img.complete ? markTall(img) : img.addEventListener('load', () => markTall(img)));
+
+    // --- Auto-split text into paragraphs for summary and journey boxes ---
+    const textBoxes = document.querySelectorAll('.summary-box, .journey-box');
+    if (textBoxes.length > 0) {
+      textBoxes.forEach(box => {
+        if (!box) return;
+        box.querySelectorAll('p').forEach((p) => {
+          const parts = p.innerHTML.split(/(?:<br\s*\/?>|\n)+/gi);
+          if (parts.length > 1) {
+            const frag = document.createDocumentFragment();
+            parts.forEach((html) => {
+              if (html.trim().length > 0) {
+                const np = document.createElement('p');
+                np.innerHTML = html.trim();
+                frag.appendChild(np);
+              }
+            });
+            p.replaceWith(frag);
+          }
+        });
+      });
+    }
   });
 </script>
 

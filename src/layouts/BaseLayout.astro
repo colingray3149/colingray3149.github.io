@@ -151,13 +151,12 @@ const { title = "Colin Gray", description = "Portfolio" } = Astro.props;
         color: var(--text);
       }
 
-              /* --- MOBILE LAYOUT SAFETY NETS --- */
+              /* --- MOBILE LAYOUT SAFETY NETS (UPDATED) --- */
         html, body {
           margin: 0;
           padding: 0;
-          width: 100%;
-          max-width: 100%;
-          overflow-x: hidden; /* only this line from old fix is still useful */
+          width: 100vw; /* Use viewport width to fix fixed-positioning issues */
+          overflow-x: hidden; 
         }
         
         header, .header {
@@ -374,9 +373,7 @@ const { title = "Colin Gray", description = "Portfolio" } = Astro.props;
       .nav-item { padding: 6px 10px; font-size: .75rem; }
       .header-right > :is(*) { transform: scale(.8); }
     }
-
-      
-      
+    
     </style>
   </head>
   <body>

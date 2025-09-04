@@ -4,27 +4,59 @@ import Timeline from "../../components/Timeline.astro";
 import TimelineItem from "../../components/TimelineItem.astro";
 
 const frontmatter = {
-  title: "Pyrosim/FDS Room Fire",
+  title: "Pyrosim/Fire Dynamics Simulator (FDS) Room Fire",
   subtitle: "CAD, meshing, obstruction boundaries."
 };
 ---
 <ProjectLayout frontmatter={frontmatter}>
   <div slot="summary">
     <h2>Project Overview</h2>
-    <p>This is where the main summary, key findings, graphs, and results will go. This content is visible immediately when the page loads.</p>
+    <p>
+    Fire Dynamics Simulator (FDS) is a CFD model developed by NIST, and its just built to simulate fire and smoke transport in buildings. Super cool, does a lot of the predictions and calculations behind the scenes, you just need to give it the right data. Problem is, it takes in simulations in the form of a .fds file, which is literally just lines of text. If you don't want to sit there and write lines of text, you can use Pyrosim. Pyrosim gives it a cool CAD interface.
+    The results were satisfying. FDS and Pyrosim to me have this sort of love hate relationship where Thunderhead Engineering's Pyrosim has this goal to take this super raw software by NIST (FDS) and make it user friendly. It does a great job: after I did the entire Pyrosim tutorial, actually creating the geometry and such was quite straightforward, as you can read below.
+    I succeeded in modeling my room with perfect dimensions using just a measuring tape. It took me a few runs, but I succeeded in recording data that would be relevant in an actual investigative process. Egress conditions and smoke flow are obviously super important for ensuring safe evacuation routes. Understanding how temperature disperses through solid surfaces could help prevent super hot doors or important systems from being damaged if there WAS a fire. 
+    Overall, I think my biggest takeaway here was that the best way to learn a software is just to start working.
+    </p>
+  
 
     <!-- New Image Grid -->
     <div class="image-grid">
       <div class="image-cell">
         <figure>
-          <img src="/temp.jpg" alt="A placeholder for the first project image." />
-          <figcaption>This is a subtitle for the first image.</figcaption>
+          <img src="/images/projects/pyrosim/pyrosim_image13.jpg" alt="Successful visibility plane" />
+          <figcaption>Visibility at 1.8 meters (my eye level). You can actually see the smoke go around the outer parts of the room because of my vent blowing and then slowly fill the center of the room. Pretty interesting.</figcaption>
         </figure>
       </div>
       <div class="image-cell">
         <figure>
-          <img src="/temp.jpg" alt="A placeholder for the second project image." />
-          <figcaption>This is a subtitle for the second image.</figcaption>
+          <img src="/images/projects/pyrosim/pyrosim_image14.jpg" alt="Successful temperature plane" />
+          <figcaption>This is a temperature plane right through the middle of the dresser. I would have loved to do more temp planes but I think my laptop would have exploded. You can see the super hot smoke rising and the fact it gets RATHER hot (400C) even in my egress route.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div slot="journey">
+    <h2>Personal Notes About the Journey</h2>
+    <p>
+    I would consider this my first personal project. I should have started earlier but really I just have normally been doing something, and I have often lacked motivation to get up and work alone, because I'm a very "work with others" person. Nonetheless, I decided to try this after a discussion with the CEO of a local Fire Protection Engineering firm, who told me what softwares they use and what their workflow looks like. It was a great conversation, hopefully he won't read this because I will say it right now: the chicken sandwich at this place we went to was very MID, lower B-tier. Great flavor, rather dry. Classic situation.
+    I wish I had started earlier, I actually had a lot of fun, there was a decent amount of troubleshooting, but the ability to explore and learn on your own with little expectations was relaxing. The results were satisfying as well, FDS and Pyrosim to me have this sort of love hate relationship where Thunderhead Engineering's Pyrosim has this goal to take this super raw software by NIST (FDS) and make it user friendly. It does a great job: after I did the entire Pyrosim tutorial, actually creating the geometry and such was quite straightforward, as you can read below.
+    Meshing took FOREVER, several days of troubleshooting and planning, though in hindsight there were bugs I could have easily just avoided. Each simulation took a day to run on my little laptop (as of writing this, I haven't done anything crazy in Ansys, surely that won't take days to run). I would have gotten even higher mesh resolution and better results, such as dabbling in Pyrolysis, but Google Cloud is probably the most complicated thing I tried to interact with this summer (more in Combustion+ML page). 
+    Please enjoy reading about my journey in Pyrosim. 
+    </p>
+
+    <!-- New Image Grid -->
+    <div class="image-grid">
+      <div class="image-cell">
+        <figure>
+          <img src="/images/projects/pyrosim/pyrosim_image11.jpg" alt="Laptop screen in FDS" />
+          <figcaption>This is what it looks like inside an FDS file to represent the screen of my laptop.</figcaption>
+        </figure>
+      </div>
+      <div class="image-cell">
+        <figure>
+          <img src="/images/projects/pyrosim/pyrosim_image12.jpg" alt="Laptop screen in Pyrosim" />
+          <figcaption>This is what is looks like in Pyrosim to represent the screen of my laptop (this was still a pain to create as you will find out below).</figcaption>
         </figure>
       </div>
     </div>
@@ -33,73 +65,73 @@ const frontmatter = {
   <div slot="timeline">
     <Timeline>
       <TimelineItem 
-        date="Week 1: Initial Research" 
-        imageSrc="/photos/projects/fireworks/firework_image1.jpg" 
-        description="A placeholder image showing the research phase.">
-        <p>My thought process for this project was simply that at the time, I thought fireworks were fascinating (I still do) because they look really cool. The chemistry behind them is well studied, and would be publically available. I just needed to learn how they work, what is inside them, and how to get rid of these components... simple, right?</p>
+        date="Step 1: Pyrosim Tutorial" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image1.jpg" 
+        description="The product of the Pyrosim tutorial.">
+        <p>I was quite intimidating by starting because I haven't learned a new CAD software in depth in a while. This tutorial was great, and I took a lot of notes. Esentially, Pyrosim follows the workflow of: Create obstructions -> Create materials -> Create surfaces from those materials -> Apply them to obstructions (These surfaces include fire) -> Meshing -> Apply planes and other stats you want to record -> Run the model</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 2: Model Setup" 
-        imageSrc="/photos/projects/fireworks/firework_image2.jpg" 
-        description="A placeholder image for the model setup.">
-        <p>Implemented the baseline combustion model in Python using Cantera. Established performance metrics.</p>
+        date="Step 2: Wishing I had a Measuring Tape Longer than 5 Feet" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image2.jpg" 
+        description="A beautiful drawing of my rooms dimensions">
+        <p>The tutorial definitely taught me that as long as you heave measurements of everything, it's actually quite easy to CAD, and that was true for the shell of the room.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 3" 
-        imageSrc="/photos/projects/fireworks/firework_image3.jpg" 
-        description="Placeholder Description 3">
-        <p>Placeholder text for tick #3.</p>
+        date="Step 3: Successful Room Model" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image3.jpg" 
+        description="Initial room shape CAD.">
+        <p>Sure enough, it was easy to CAD the room once I had everything measured. There were some ups and downs like wall width, but with the help of the measurement phone app and Google, I got it done.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 4" 
-        imageSrc="/photos/projects/fireworks/firework_image4.jpg" 
-        description="Placeholder Description 4">
-        <p>Placeholder text for tick #4.</p>
+        date="Step 4: Furniture" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image4.jpg" 
+        description="Room shell but with my bed and desk.">
+        <p>NOT INCLUDED IN THIS STEP is where I forgot to save my model after CADing my whole room, desk appliances and everything, unplugged my laptop so I could charge my Kindle, then lost all my progress when my laptop died. My suggestion is skip that step.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 5" 
-        imageSrc="/photos/projects/fireworks/firework_image5.jpg" 
-        description="Placeholder Description 5">
-        <p>Placeholder text for tick #5.</p>
+        date="Step 5 Part 1: Finishing the Model" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image5.jpg" 
+        description="COLIN ROOM REVEAL">
+        <p>I made this photo in MS Paint while getting 8 FPS from running an FDS simulation. This is my room, please ignore the luggage on the ground, I can't be bothered to put stuff in a dresser just to leave after a few weeks. It's a calm room.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 6" 
-        imageSrc="/photos/projects/fireworks/firework_image6.jpg" 
-        description="Placeholder Description 6">
-        <p>Placeholder text for tick #6.</p>
+        date="Step 5 Part 2: Finishing the Model" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image6.jpg" 
+        description="Aerial view of completed room model">
+        <p>Side note: for some reason I'm listening to Last Christmas while typing this. This is the completed room model, the colours aren't arbitrary. They are supposed to fit the actual room colours but they represent surfaces/materials. Like, my desk is black/blue because my 1 inch thick plywood "surface" is black.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 7" 
-        imageSrc="/photos/projects/fireworks/firework_image7.jpg" 
-        description="Placeholder Description 7">
-        <p>Placeholder text for tick #7.</p>
+        date="Step 6: The Nightmare of Meshing" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image7.jpg" 
+        description="I almost gave up, like genuinely I almost gave up on meshing and actually having high resolution around my setup.">
+        <p>FDS apparently has a lot of hidden meshing rules. You can't have mesh boundaries right on obstruction boundaries, you can't have one cell wide meshing, and you can't have mesh that is overlapping (normally). I really don't want to sit here and complain because part of it is my fault and in hindsight I should have realized how to solve the isuses. Basically, I needed to apply my mesh refinement and look closely. Once I did that, I was able to INSTANTLY see my issue of having ONE small mesh that was 1 cell wide.</p>
       </TimelineItem>
 
           <TimelineItem 
-        date="Week 8" 
-        imageSrc="/photos/projects/fireworks/firework_image8.jpg" 
-        description="Placeholder Description 8">
-        <p>Placeholder text for tick #8.</p>
+        date="Step 7: Admire the Functioning Mesh" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image8.jpg" 
+        description="Beautifully meshed room model">
+        <p>This was the final result. To my understanding FDS sort of views meshes as 2D in a way, and that's why you can see on the boundaries of the mesh what they would look like from a 2D face. I don't know if this is convention, I have never meshed before. When I go to mesh my Ansys model, I will make sure to research all of the rules first.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 9" 
-        imageSrc="/photos/projects/fireworks/firework_image9.jpg" 
-        description="Placeholder Description 9">
-        <p>Placeholder text for tick #9.</p>
+        date="Step 8: Running the Sim" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image9.jpg" 
+        description="Just one of many interesting things that happened while running sims on my laptop.">
+        <p>Running sims took forever on my laptop as I pointed out. The first time I ran it, apparently I had deleted part of my cieling. Second time, I realized I wasn't recording any data. The last two times were to make sure the data I was recording looked nice. Regardless, I succeeded.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 10" 
-        imageSrc="/photos/projects/fireworks/firework_image10.jpg" 
-        description="Placeholder Description 10">
-        <p>Placeholder text for tick #10.</p>
+        date="Step 9: Watch The Room Burn Down" 
+        imageSrc="/images/projects/pyrosim/pyrosim_image10.jpg" 
+        description="What it looks like to watch the soot dispersion in the model.">
+        <p>The title of this tick is ironic because I almost tried to model pyrolysis, but I'm pretty sure if I did I would still be working on FDS right now. Anyways, this is what the soot dispersion of my burning dresser looks like, it becomes pretty dense.</p>
       </TimelineItem>
     </Timeline>
   </div>
