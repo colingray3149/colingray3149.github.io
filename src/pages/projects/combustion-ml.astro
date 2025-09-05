@@ -4,27 +4,33 @@ import Timeline from "../../components/Timeline.astro";
 import TimelineItem from "../../components/TimelineItem.astro";
 
 const frontmatter = {
-  title: "Combustion ML (Mechanism Reduction)",
+  title: "Cantera Mechanism Reduction Using Machine Learning",
   subtitle: "L1 pruning, speedup & accuracy tradeoffs."
 };
 ---
 <ProjectLayout frontmatter={frontmatter}>
   <div slot="summary">
     <h2>Project Overview</h2>
-    <p>This is where the main summary, key findings, graphs, and results will go. This content is visible immediately when the page loads.</p>
+    <p>
+    This project is my magnum opus. It's the result of hundreds of hours of work, and it is NOT FINISHED. I will likely keep working on this project on the side, there are a lot of things I want to try and future directions. 
+    Cantera is a Python library written by Prof. Dave Goodwin of Caltech to simulate chemical kinetics (i.e. combustion). Combustion has TONS of species involved, and it requires a lot of computational power to model. I wrote code that takes in this combustion data, creates the right shaped NN, and trains it to predict the combustion state. The architecture allows it to tell you what species can be removed and still get accurate predictions for specific conditions inside Cantera.
+    I was given the project suggestion by Professor Tarek Echekki, who also provided some guidance to starting the project and directions to look. Essentially, the idea was to use LASSO to perform feature selection and mechanism pruning, essentially finding what species could be removed from a combustion simulation while still maintaining accuracy in different conditions. The project has slightly evolved beyond this point.
+    I have gotten some results, in fact my results have, at some points, looked REALLY nice. That cover card you saw on the project page was one of those results that looked really nice. However, you have been lied to, that particular screenshot was from a bug in my code. I was lied to as well, don't worry. My results look a lot more like the first image below. I am getting somewhere but need to keep fine tuning things. Finally, I have generated a huge dataset for a surrogate gasoline with a giant mechanism that literally took several days to generate even with multiprocessing and splitting into batches. I believe my project will be complete once I have satisfied myself with results from pruning that mechanism and using that dataset. However, I need to finish working with the methane dataset first.
+    There is really too much to talk about with this project. If you have any curiosities that aren't satisfied below, please contact me at my email on the home page of my portfolio or on my CV. I would LOVE to talk more about it.
+    </p>
 
     <!-- New Image Grid -->
     <div class="image-grid">
       <div class="image-cell">
         <figure>
-          <img src="/temp.jpg" alt="A placeholder for the first project image." />
-          <figcaption>This is a subtitle for the first image.</figcaption>
+          <img src="/images/projects/mlcomb/combml_image21.jpg" alt="Reduced vs full mechanism results." />
+          <figcaption>Actual current photo of what my most recent run of a reduced methane mechanism performs compared to a non-reduced mechanism. It has 85% average accuracy (though I think this statistic may be skewed).</figcaption>
         </figure>
       </div>
       <div class="image-cell">
         <figure>
-          <img src="/temp.jpg" alt="A placeholder for the second project image." />
-          <figcaption>This is a subtitle for the second image.</figcaption>
+          <img src="/images/projects/mlcomb/combml_image22.jpg" alt="The function that dictates how my entire neural network is created and trains." />
+          <figcaption>I wanted my code to run nearly entirely automatic, so I created this function that basically creates the entire config the code runs on based on the size of data input, and also on whatever values you set in this config file.</figcaption>
         </figure>
       </div>
     </div>
@@ -32,79 +38,87 @@ const frontmatter = {
 
   <div slot="journey">
     <h2>Personal Notes About the Journey</h2>
-    <p>INFORMAL TEXT GOES HERE</p>
+    <p>    
+    I will open with this. This might singlehandedly be the project I have spent the most time on in my entire life. Hundreds of hours, easily. I had never taken CS before, never really coded, and in the last 5 months have gotten to here. I experienced so much, even in terms of just ups and downs.
+    There were two times I got so frustrated that I genuinely started crying. Very very manly tears. I had a double ear infection at one point, and when I started antibiotics, being upright made me nauseous. So I CODED IN BED. Point is, I can confidently say this project sort of represents the culmination of 20 years of almost every subject I've ever learned, and it took my soul with it.
+    Fun fact, I just ran into a code error while writing this, for some reason after adding GatedHeads, my code stopped applying ReLU to layers beyond the first. Last logistical thing I want to mention here, I will probably upload my code eventually. It is all on GitHub just in a private repo. I talk to myself in docstrings a lot when coding and need to clean it up.
+    I actually wrote as much code as I could, I really only used LLMs for specific complicated things, to get an idea of what is convention, or if I had a bug that I truly didn't understand. In my code, I often note when something was written by an LLM. I might publish that soon. 
+    My knowledge of ML has expanded so much it's insane, like sometimes I just look at things or imagine scenarios I would need to train a model and just try to picture what shape the data would need to be in. Even just training a robot to combine LIDAR and camera data to identify objects or people, or to decide optimal paths of travel based on the direction someone is walking and where they are looking.
+    I really want to thank everyone who helped me. I have never been very code savvy (I thought), and in fact was predisposed to disliking coding cause I hadn't had good teachers. If anyone who helped me even answer questions about the coding industry or stupid conventions or ideas are reading this right now, and I don't thank you directly at some point in my LinkedIn post or on this portfolio, thank you so much, truly. 
+    Alright, let's dive into this.
+    </p>
   </div>
 
   <div slot="timeline">
     <Timeline>
       <TimelineItem 
-        date="Week 1: Initial Research" 
+        date="Step 1: Learn to Code" 
         imageSrc="/images/projects/mlcomb/combml_image1.jpg" 
-        description="A placeholder image showing the research phase.">
-        <p>My thought process for this project was simply that at the time, I thought fireworks were fascinating (I still do) because they look really cool. The chemistry behind them is well studied, and would be publically available. I just needed to learn how they work, what is inside them, and how to get rid of these components... simple, right?</p>
+        description="An image of deciding that my skills were no longer cutting it and that I had to take CS1.">
+        <p>After taking Python for ChemEs and realizing that I'm really bad at Python, and knowing that I might do something computational for research, I decided to take CS1.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 2: Model Setup" 
+        date="Step 2: Learning to Machine Learn" 
         imageSrc="/images/projects/mlcomb/combml_image2.jpg" 
-        description="A placeholder image for the model setup.">
-        <p>Implemented the baseline combustion model in Python using Cantera. Established performance metrics.</p>
+        description="My folder for my machine learning research of notes I took.">
+        <p>I took a LOT of notes, like, my hand was hurting while doing PyTorch in 24 hours. I think here is where I will thank Adarsh, Duy, Aiden, Ryan Lin, and Philippe.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 3" 
+        date="Step 3: Create a VSCode Environment and Set up Everything" 
         imageSrc="/images/projects/mlcomb/combml_image3.jpg" 
         description="Placeholder Description 3">
         <p>Placeholder text for tick #3.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 4" 
+        date="Step 4: Learn Cantera" 
         imageSrc="/images/projects/mlcomb/combml_image4.jpg" 
-        description="Placeholder Description 4">
-        <p>Placeholder text for tick #4.</p>
+        description="Screenshot of the book title.">
+        <p>THIS BOOK IS THE HOLY GRAIL. <a href=https://www.cambridgescholars.com/resources/pdfs/978-1-5275-3320-2-sample.pdf'>CLICK RIGHT HERE</a>"> I got maybe 45% through this textbook and it literally just did everything you could need it to do. The Cantera setup, a great explanation to combustion, how files work, just SO MUCH stuff.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 5" 
+        date="Step 5: First Methane Dataset" 
         imageSrc="/images/projects/mlcomb/combml_image5.jpg" 
-        description="Placeholder Description 5">
-        <p>Placeholder text for tick #5.</p>
+        description="A picture explaining how my code works to generate data.">
+        <p>My code to generate data has become quite a bit more complicated now that I generate across different times, but in general it follows the same method it always has. I create a linspace for phi and temperature, and manually write what pressure I want. I vary the simulation across these values, with T being the main one, and then... save the data as init and fin. Super simple, my code to generate the neural network takes in this format, I can export species_list, everything is nice and beautiful.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 6" 
+        date="Step 6: Processing Data + First Neural Network" 
         imageSrc="/images/projects/mlcomb/combml_image6.jpg" 
-        description="Placeholder Description 6">
-        <p>Placeholder text for tick #6.</p>
+        description="The data normalization incident.">
+        <p>Processing the data was a different story. After the PyTorch in 24 hours video, creating the neural network was "fine." Some things are different based on the recommendation of ChatGPT, I used data loaders for example I still don't understand what that does really. Now, handwaving the neural network which at first was just a basic L1/LASSO loss with ReLU, a few layers. The usual, I had to worry about my data. With pressure being numbers in the hundreds of thousands of Pa and temperature in thousands, I thought I should normalize my data. My RMSE was always super bad after doing this so I unnormalized thinking that normalization just made CH4 and O2 and stuff weaker. This... well you can see. Finally, I decided to normalize P and T and not normalize anything else.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 7" 
+        date="Step 7: The Great Methane Dataset Blunder" 
         imageSrc="/images/projects/mlcomb/combml_image7.jpg" 
-        description="Placeholder Description 7">
-        <p>Placeholder text for tick #7.</p>
+        description="It's so embarassing in hindsight, just don't look.">
+        <p>Always look at your data. I mean seriously, even if your data is HUGE, just take a peek if you can. That is the lesson I learned. When I still couldn't get my RMSE down, I just decided to generate a new dataset using Cantera's equilibrate function vs running a batch reactor. This function supposedly instantly brings you to the end state. Long story short, I had REALLLLLYYY good RMSE for a while with my new dataset. Finally, I wrote code to investigate a few individual cases, and saw that my output for things like CO was zero. Yeah... using equilibrate doesn't fit my research purposes.</p>
       </TimelineItem>
 
           <TimelineItem 
-        date="Week 8" 
+        date="Step 8: Group LASSO" 
         imageSrc="/images/projects/mlcomb/combml_image8.jpg" 
-        description="Placeholder Description 8">
+        description="Adarsh clutched up so much, I didn't even realize at the time that I was foolish.">
         <p>Placeholder text for tick #8.</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 9" 
+        date="Step 9: New Datasets and Architecture" 
         imageSrc="/images/projects/mlcomb/combml_image9.jpg" 
-        description="Placeholder Description 9">
-        <p>Placeholder text for tick #9.</p>
+        description="GatedHeads + New Dataset Across Time = This output. Which should make a LOT of sense (Spoiler, NH3 is NOT an intermediate in methane combustion!).">
+        <p>As I said above, I'm currently working on this new architecture. I have huge datasets to play with that have outputs of entire lists of species at once. I have literally a 10gb CSV (However thats possible) of gasoline surrogate data using iso-octane, n-dodecane, and toluene. Right now, I just realized (while trying to get a screenshot for this) that my neural network just isn't applying ReLU to layers beyond the first one. This is definitely a byproduct of my GatedHead code. Yeah...</p>
       </TimelineItem>
 
       <TimelineItem 
-        date="Week 10" 
+        date="Step 10: Going Forward" 
         imageSrc="/images/projects/mlcomb/combml_image10.jpg" 
-        description="Placeholder Description 10">
-        <p>Placeholder text for tick #10.</p>
+        description="Those who know... I want to actually understand this paper at some point.">
+        <p>As with every machine learning project, there are like infinite ways to improve and avenues to attack, it's a matter of finding and deciding which one is more likely to produce the results you want. I think my current architecture still has a lot to explore, but I realized while reading the paper on Learning in Gated Networks that I don't really have a ML LANGUAGE foundation. I want to learn more to be able to discuss my work better and not use relativistic or descriptive languages. Plus, I really want to work more with these new datasets, and just keep trying new things. Right now, this is all going on pause still for a bit, I need to work on Ansys stuff and also play Silksong and relax and enjoy summer. If you have read this far, I hope you enjoyed, and thank you.</p>
       </TimelineItem>
     </Timeline>
   </div>
