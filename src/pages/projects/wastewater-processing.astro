@@ -13,23 +13,23 @@ const frontmatter = {
   <div slot="summary">
     <h2>Project Overview</h2>
     <p>
-    This project was for a separations and distillations class, and essentially the topic was to find a problem that could be solved with a wastewater treatment plant, and design a basic schematics. The requirements involved identifying components, finding conventional ways to remove them to safe levels, and justifying size/cost/manpower etc. I chose to investigate a potential fireworks production facility, and design a wastewater treatment plant to take care of all runoff during the production process. It would then turn this water into something that could be used to fight fires (needed to be stream safe).
-    Biting off way more than I could chew, the project had 17 species I needed to remove from different stages. I had to thoroughly investigate the firework production process, group the many species that could be removed together, make several assumptions, and use ChatGPT to do a lot of the repetitive math. Otherwise, the project likely would have taken more than 25 hours. We only needed one reactive and one non-reactive process, you might notice mine has *slightly* more than that.
+    This project was for a separations and distillations class, and essentially the topic was to find a problem that could be solved with a wastewater treatment plant, and design a basic schematic. The requirements involved identifying components, finding conventional ways to remove them to safe levels, and justifying size/cost/manpower, etc. I chose to investigate a potential fireworks production facility, and design a wastewater treatment plant to take care of all runoff during the production process. It would then turn this water into something that could be used to fight fires (needed to be stream-safe).
+    I bit off way more than I could chew; the project had 17 species I needed to remove from different stages. I had to thoroughly investigate the firework production process, group the many species that could be removed together, make several assumptions, and use ChatGPT to do a lot of the repetitive math. Otherwise, the project likely would have taken more than 25 hours. We only needed one reactive and one non-reactive process; you might notice mine has <em>slightly</em> more than that.
     
-    Finally, I must admit, since this was my first time creating something like this and I went so complicated, there are already issues I have found and parts that are impractical. I discuss some of them in the timeline below. Final note, if you're going to read my report on it, and are surprised that the language wasn't formal, I thought it fit better. If you want to see my formal writing, read my Summer 2025 report.</p>
+    Finally, I must admit, since this was my first time creating something like this and I made it so complicated, there are already issues I have found and parts that are impractical. I discuss some of them in the timeline below. Final note: if you're going to read my report on it and are surprised that the language wasn't formal, I thought it fit better. If you want to see my formal writing, read my Summer 2025 report.</p>
 
     <!-- New Image Grid -->
     <div class="image-grid">
       <div class="image-cell">
         <figure>
           <img src="/images/projects/fireworks/firework_image2.jpg" alt="Drawn Firework" />
-          <figcaption>Schematic of the firework I assumed mine were.</figcaption>
+          <figcaption>Schematic of the fireworks I assumed mine were.</figcaption>
         </figure>
       </div>
       <div class="image-cell">
         <figure>
           <img src="/images/projects/fireworks/firework_image7.jpg" alt="Design of treatment" />
-          <figcaption>A schematic for the treatment steps using DWSIM. The simulation itself doesn't work (wasn't part of the rubric) but the layout is accurate.</figcaption>
+          <figcaption>A schematic for the treatment steps using DWSIM. The simulation itself doesn't work (wasn't part of the rubric), but the layout is accurate.</figcaption>
         </figure>
       </div>
     </div>
@@ -39,7 +39,7 @@ const frontmatter = {
     <h2>Personal Notes About the Journey</h2>
     <p>
     I don't have a HUGE amount of personal story to tell about this. If I could go back in time, I probably would still do the same thing.
-    Since this isn't like a personal project of some sort, there isn't like a big thing for me to talk about that wasn't discussed above. Read my other projects though to see why this is an important section.</p>
+    Since this isn't like a personal project of some sort, there isn't like a big thing for me to talk about that wasn't discussed above. Read my other projects, though, to see why this is an important section.</p>
   </div>
 
   <div slot="timeline">
@@ -48,28 +48,28 @@ const frontmatter = {
         date="Step 1: Deciding on my Topic" 
         imageSrc="/images/projects/fireworks/firework_image1.jpg" 
         description="A cool fireworks photo from Yu Kodama, Getty Images.">
-        <p>My thought process for this project was simply that at the time, I thought fireworks were fascinating (I still do) because they look really cool. The chemistry behind them is well studied, and would be publically available. I just needed to learn how they work, what is inside them, and how to get rid of these components... simple, right?</p>
+        <p>My thought process for this project was simply that at the time, I thought fireworks were fascinating (I still do) because they look really cool. The chemistry behind them is well studied, and would be publicly available. I just needed to learn how they work, what is inside them, and how to get rid of these components... simple, right?</p>
       </TimelineItem>
 
       <TimelineItem 
         date="Step 2: Creating Firework Schematic" 
         imageSrc="/images/projects/fireworks/firework_image2.jpg" 
-        description="My sketch of a fireworks internals.">
+        description="My sketch of a firework's internals.">
         <p>I first researched the parts of a firework. I drew this beautiful photo to explain my reasoning behind the components I used. </p>
       </TimelineItem>
 
       <TimelineItem 
         date="Step 3: Finding my Firework Recipes" 
         imageSrc="/images/projects/fireworks/firework_image3.jpg" 
-        description="Sketch website I found all of my recipes from: <a href='https://pyrodata.com/PyroGuide/index.php%5Etitle=Category_Compositions.htm'>PyroData</a>"
-        <p>Funny thing about finding super specific recipes on fireworks: it's not easy. My first attempt (asking ChatGPT) resulted in it telling me it can't help me with dangerous activities. Nonetheless, I went to a forum and found this SUPER specific website with tons of information (linked in image description). I even read the website casually for a bit.</p>
+        description="Sketch website I found all of my recipes on: <a href='https://pyrodata.com/PyroGuide/index.php%5Etitle=Category_Compositions.htm'>PyroData</a>"
+        <p>Funny thing about finding super specific recipes for fireworks: it's not easy. My first attempt (asking ChatGPT) resulted in it telling me it can't help me with dangerous activities. Nonetheless, I went to a forum and found this SUPER specific website with tons of information (linked in image description). I even read the website casually for a bit.</p>
       </TimelineItem>
 
       <TimelineItem 
         date="Step 4: Deciding Which Fireworks to Make and Aggregating Recipes" 
         imageSrc="/images/projects/fireworks/firework_image4.jpg" 
         description="The recipes for the 'stars' (the cool flashy parts of fireworks) and which colours I chose.">
-        <p>This is definitely where I sent myself down the path of pain. I chose to do 5 different colours, and made assumptions like I would produce 1k a day, 200 of each... I was foolish.</p>
+        <p>This is definitely where I sent myself down the path of pain. I chose to do 5 different colours and made assumptions, like that I would produce 1000 fireworks a day, 200 of each colour... I was foolish.</p>
       </TimelineItem>
 
       <TimelineItem 
@@ -89,22 +89,22 @@ const frontmatter = {
       <TimelineItem 
         date="Step 7: Decide Steps and Design Reactor" 
         imageSrc="/images/projects/fireworks/firework_image7.jpg" 
-        description="A super elaborate reactor made in DWSIM. This obviously didn't work, but was just to show what the layout was like.">
-        <p>Went piece by piece through each group of molecules and came up with splits, floccing steps, treatments, etc. Used DWSIM to make the whole layout even though it would have been nearly impossible to get it to function properly.</p>
+        description="A super elaborate reactor made in DWSIM. This obviously didn't work, but it was just to show what the layout was like.">
+        <p>Went piece by piece through each group of molecules and came up with splits, flocculation steps, treatments, etc. Used DWSIM to make the whole layout even though it would have been nearly impossible to get it to function properly.</p>
       </TimelineItem>
 
           <TimelineItem 
         date="Step 8: Run Numbers, Apply Assumptions, Calculate Status at Each Step" 
         imageSrc="/images/projects/fireworks/firework_image8.jpg" 
         description="Part of the assignment was making tables for every individual process, so this is how I formatted them.">
-        <p>My project was built basically on assumptions like that steps would remove 95% of this or that, though these assumptions were primarily based on actual papers or product descriptions. Mass balance and stuff had to be run on each process, which was just adding numbers in a spreadsheet. I used ChatGPT for everything after the first 3.</p>
+        <p>My project was built basically on assumptions like that certain steps would remove 95% of their target compound, though these assumptions were primarily based on actual papers or product descriptions. Mass balance calculations had to be run on each process, which was just adding numbers in a spreadsheet. I used ChatGPT for everything after the first 3.</p>
       </TimelineItem>
 
       <TimelineItem 
         date="Step 9: Wrap up and Submit" 
         imageSrc="/images/projects/fireworks/firework_image9.jpg" 
         description="How I ended my paper.">
-        <p>That was basically the entire creative process of my designing of the firework treatment plant. I left out the parts where I would actually perform mass balance and find out that 3 steps ago I lost chlorine atoms, or that my concentration is way above the environmentally friendly limit. There is a reason it took 27 hours.</p>
+        <p>That was basically the entire creative process of designing of the firework treatment plant. I left out the parts where I would actually perform mass balance and find out that 3 steps ago I lost chlorine atoms, or that my concentration is way above the environmentally friendly limit. There is a reason it took 27 hours.</p>
       </TimelineItem>
 
     </Timeline>

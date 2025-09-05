@@ -12,10 +12,10 @@ const frontmatter = {
   <div slot="summary">
     <h2>Project Overview</h2>
     <p>
-    Fire Dynamics Simulator (FDS) is a CFD model developed by NIST, and its just built to simulate fire and smoke transport in buildings. Super cool, does a lot of the predictions and calculations behind the scenes, you just need to give it the right data. Problem is, it takes in simulations in the form of a .fds file, which is literally just lines of text. If you don't want to sit there and write lines of text, you can use Pyrosim. Pyrosim gives it a cool CAD interface.
-    The results were satisfying. FDS and Pyrosim to me have this sort of love hate relationship where Thunderhead Engineering's Pyrosim has this goal to take this super raw software by NIST (FDS) and make it user friendly. It does a great job: after I did the entire Pyrosim tutorial, actually creating the geometry and such was quite straightforward, as you can read below.
+    Fire Dynamics Simulator (FDS) is a CFD model developed by NIST, and it's just built to simulate fire and smoke transport in buildings. Super cool-- it does a lot of the predictions and calculations behind the scenes, you just need to give it the right data. Problem is, it takes in simulations in the form of an .fds file, which is literally just lines of text. If you don't want to sit there and write lines of text, you can use Pyrosim. Pyrosim gives it a cool CAD interface.
+    The results were satisfying. FDS and Pyrosim to me have this sort of love-hate relationship where Thunderhead Engineering's Pyrosim has this goal to take this super raw software by NIST (FDS) and make it user-friendly. It does a great job: after I did the entire Pyrosim tutorial, actually creating the geometry and such was quite straightforward, as you can read below.
     I succeeded in modeling my room with perfect dimensions using just a measuring tape. It took me a few runs, but I succeeded in recording data that would be relevant in an actual investigative process. Egress conditions and smoke flow are obviously super important for ensuring safe evacuation routes. Understanding how temperature disperses through solid surfaces could help prevent super hot doors or important systems from being damaged if there WAS a fire. 
-    Overall, I think my biggest takeaway here was that the best way to learn a software is just to start working.
+    Overall, I think my biggest takeaway here was that the best way to learn a piece of software is just to start working.
     </p>
   
 
@@ -30,7 +30,7 @@ const frontmatter = {
       <div class="image-cell">
         <figure>
           <img src="/images/projects/pyrosim/pyrosim_image14.jpg" alt="Successful temperature plane" />
-          <figcaption>This is a temperature plane right through the middle of the dresser. I would have loved to do more temp planes but I think my laptop would have exploded. You can see the super hot smoke rising and the fact it gets RATHER hot (400C) even in my egress route. 400C is crazy high, though, so maybe my heat release rate curve was inacurrate for my dresser.</figcaption>
+          <figcaption>This is a temperature plane right through the middle of the dresser. I would have loved to do more temp planes but I think my laptop would have exploded. You can see the super hot smoke rising and the fact it gets RATHER hot (400°C) even in my egress route. 400°C is crazy high, though, so maybe my heat release rate curve was inacurrate for my dresser.</figcaption>
         </figure>
       </div>
     </div>
@@ -39,8 +39,8 @@ const frontmatter = {
   <div slot="journey">
     <h2>Personal Notes About the Journey</h2>
     <p>
-    I would consider this my first personal project. I should have started earlier but really I just have normally been doing something, and I have often lacked motivation to get up and work alone, because I'm a very "work with others" person. Nonetheless, I decided to try this after a discussion with the CEO of a local Fire Protection Engineering firm, who told me what softwares they use and what their workflow looks like. It was a great conversation, hopefully he won't read this because I will say it right now: the chicken sandwich at this place we went to was very MID, lower B-tier. Great flavor, rather dry. Classic situation.
-    I wish I had started earlier, I actually had a lot of fun, there was a decent amount of troubleshooting, but the ability to explore and learn on your own with little expectations was relaxing. The results were satisfying as well, FDS and Pyrosim to me have this sort of love hate relationship where Thunderhead Engineering's Pyrosim has this goal to take this super raw software by NIST (FDS) and make it user friendly. It does a great job: after I did the entire Pyrosim tutorial, actually creating the geometry and such was quite straightforward, as you can read below.
+    I would consider this my first personal project. I should have started earlier but really I just have normally been doing something, and I have often lacked motivation to get up and work alone, because I'm a very "work with others" person. Nonetheless, I decided to try this after a discussion with the CEO of a local Fire Protection Engineering firm, who told me what software they use and what their workflow looks like. It was a great conversation. Hopefully, he won't read this because I will say it right now: the chicken sandwich at this place we went to was very MID, lower B-tier. Great flavor, rather dry. Classic situation.
+    I wish I had started earlier. I actually had a lot of fun; there was a decent amount of troubleshooting, but the ability to explore and learn on your own with little expectations was relaxing. 
     Meshing took FOREVER, several days of troubleshooting and planning, though in hindsight there were bugs I could have easily just avoided. Each simulation took a day to run on my little laptop (as of writing this, I haven't done anything crazy in Ansys, surely that won't take days to run). I would have gotten even higher mesh resolution and better results, such as dabbling in Pyrolysis, but Google Cloud is probably the most complicated thing I tried to interact with this summer (more in Combustion+ML page). 
     Please enjoy reading about my journey in Pyrosim. 
     </p>
@@ -56,7 +56,7 @@ const frontmatter = {
       <div class="image-cell">
         <figure>
           <img src="/images/projects/pyrosim/pyrosim_image12.jpg" alt="Laptop screen in Pyrosim" />
-          <figcaption>This is what is looks like in Pyrosim to represent the screen of my laptop (this was still a pain to create as you will find out below).</figcaption>
+          <figcaption>This is what it looks like in Pyrosim to represent the screen of my laptop (this was still a pain to create as you will find out below).</figcaption>
         </figure>
       </div>
     </div>
@@ -68,14 +68,14 @@ const frontmatter = {
         date="Step 1: Pyrosim Tutorial" 
         imageSrc="/images/projects/pyrosim/pyrosim_image1.jpg" 
         description="The product of the Pyrosim tutorial.">
-        <p>I was quite intimidating by starting because I haven't learned a new CAD software in depth in a while. This tutorial was great, and I took a lot of notes. Esentially, Pyrosim follows the workflow of: Create obstructions -> Create materials -> Create surfaces from those materials -> Apply them to obstructions (These surfaces include fire) -> Meshing -> Apply planes and other stats you want to record -> Run the model</p>
+        <p>I was quite intimidated to start because I haven't learned a new CAD software in depth in a while. This tutorial was great, and I took a lot of notes. Essentially, Pyrosim follows the workflow of: Create obstructions -> Create materials -> Create surfaces from those materials -> Apply them to obstructions (These surfaces include fire) -> Meshing -> Apply planes and other stats you want to record -> Run the model</p>
       </TimelineItem>
 
       <TimelineItem 
         date="Step 2: Wishing I had a Measuring Tape Longer than 5 Feet" 
         imageSrc="/images/projects/pyrosim/pyrosim_image2.jpg" 
-        description="A beautiful drawing of my rooms dimensions">
-        <p>The tutorial definitely taught me that as long as you heave measurements of everything, it's actually quite easy to CAD, and that was true for the shell of the room.</p>
+        description="A beautiful drawing of my room's dimensions">
+        <p>The tutorial definitely taught me that as long as you have measurements of everything, it's actually quite easy to CAD, and that was true for the shell of the room.</p>
       </TimelineItem>
 
       <TimelineItem 
@@ -89,7 +89,7 @@ const frontmatter = {
         date="Step 4: Furniture" 
         imageSrc="/images/projects/pyrosim/pyrosim_image4.jpg" 
         description="Room shell but with my bed and desk.">
-        <p>NOT INCLUDED IN THIS STEP is where I forgot to save my model after CADing my whole room, desk appliances and everything, unplugged my laptop so I could charge my Kindle, then lost all my progress when my laptop died. My suggestion is skip that step.</p>
+        <p>NOT INCLUDED IN THIS STEP is where I forgot to save my model after CADing my whole room, desk appliances and everything, unplugged my laptop so I could charge my Kindle, then lost all my progress when my laptop died. My suggestion is to skip that step.</p>
       </TimelineItem>
 
       <TimelineItem 
@@ -103,35 +103,35 @@ const frontmatter = {
         date="Step 5 Part 2: Finishing the Model" 
         imageSrc="/images/projects/pyrosim/pyrosim_image6.jpg" 
         description="Aerial view of completed room model">
-        <p>Side note: for some reason I'm listening to Last Christmas while typing this. This is the completed room model, the colours aren't arbitrary. They are supposed to fit the actual room colours but they represent surfaces/materials. Like, my desk is black/blue because my 1 inch thick plywood "surface" is black.</p>
+        <p>Side note: for some reason I'm listening to Last Christmas while typing this. This is the completed room model, the colours aren't arbitrary. They are supposed to fit the actual room colours but they represent surfaces/materials. Like, my desk is black/blue because my 1-inch-thick plywood "surface" is black.</p>
       </TimelineItem>
 
       <TimelineItem 
         date="Step 6: The Nightmare of Meshing" 
         imageSrc="/images/projects/pyrosim/pyrosim_image7.jpg" 
         description="I almost gave up, like genuinely I almost gave up on meshing and actually having high resolution around my setup.">
-        <p>FDS apparently has a lot of hidden meshing rules. You can't have mesh boundaries right on obstruction boundaries, you can't have one cell wide meshing, and you can't have mesh that is overlapping (normally). I really don't want to sit here and complain because part of it is my fault and in hindsight I should have realized how to solve the isuses. Basically, I needed to apply my mesh refinement and look closely. Once I did that, I was able to INSTANTLY see my issue of having ONE small mesh that was 1 cell wide.</p>
+        <p>FDS apparently has a lot of hidden meshing rules. You can't have mesh boundaries right on obstruction boundaries, you can't have one-cell-wide meshing, and you can't have mesh that is overlapping (normally). I really don't want to sit here and complain because part of it is my fault and in hindsight I should have realized how to solve the issues. Basically, I needed to apply my mesh refinement and look closely. Once I did that, I was able to INSTANTLY see my issue of having ONE small mesh that was 1 cell wide.</p>
       </TimelineItem>
 
           <TimelineItem 
         date="Step 7: Admire the Functioning Mesh" 
         imageSrc="/images/projects/pyrosim/pyrosim_image8.jpg" 
         description="Beautifully meshed room model">
-        <p>This was the final result. To my understanding FDS sort of views meshes as 2D in a way, and that's why you can see on the boundaries of the mesh what they would look like from a 2D face. I don't know if this is convention, I have never meshed before. When I go to mesh my Ansys model, I will make sure to research all of the rules first.</p>
+        <p>This was the final result. To my understanding, FDS sort of views meshes as 2D in a way, and that's why you can see on the boundaries of the mesh what they would look like from a 2D face. I don't know if this is convention, I have never meshed before. When I go to mesh my Ansys model, I will make sure to research all of the rules first.</p>
       </TimelineItem>
 
       <TimelineItem 
         date="Step 8: Running the Sim" 
         imageSrc="/images/projects/pyrosim/pyrosim_image9.jpg" 
         description="Just one of many interesting things that happened while running sims on my laptop.">
-        <p>Running sims took forever on my laptop as I pointed out. The first time I ran it, apparently I had deleted part of my cieling. Second time, I realized I wasn't recording any data. The last two times were to make sure the data I was recording looked nice. Regardless, I succeeded.</p>
+        <p>Running sims took forever on my laptop as I pointed out. The first time I ran it, apparently I had deleted part of my ceiling. Second time, I realized I wasn't recording any data. The last two times were to make sure the data I was recording looked nice. Regardless, I succeeded.</p>
       </TimelineItem>
 
       <TimelineItem 
         date="Step 9: Watch The Room Burn Down" 
         imageSrc="/images/projects/pyrosim/pyrosim_image10.jpg" 
         description="What it looks like to watch the soot dispersion in the model.">
-        <p>The title of this tick is ironic because I almost tried to model pyrolysis, but I'm pretty sure if I did I would still be working on FDS right now. Anyways, this is what the soot dispersion of my burning dresser looks like, it becomes pretty dense.</p>
+        <p>The title of this step is ironic because I almost tried to model pyrolysis, but I'm pretty sure if I did I would still be working on FDS right now. Anyways, this is what the soot dispersion of my burning dresser looks like; it becomes pretty dense.</p>
       </TimelineItem>
     </Timeline>
   </div>
