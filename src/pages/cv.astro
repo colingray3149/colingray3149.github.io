@@ -59,11 +59,25 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <div class="cyber-box cv-section">
       <h2 class="section-title">Experience</h2>
       <div class="entry">
+        <h3 class="entry-title">Propulsion and Business Team Member</h3>
+        <p class="entry-subtitle">Propulsion, Aeronautics, and Rocket Systems Engineering at Caltech (PARSEC)</p>
+        <p class="entry-duration">Sep 2025 - Present</p>
+        <ul>
+          <li>Collaborating with a multidisciplinary team to fire a liquid-fueled rocket capable of reaching 45,000 ft and recovering intact</li>
+          <li>Lead data acquisition for the Rudy RP-1/LOX rocket engine – integrating and programming a full sensor suite</li>
+          <li>Measuring convective heat flux from the combustion gases with thermocouples embedded in combustion chamber walls</li>
+          <li>Determining thermodynamic state of propellant liquids prior to injection into combustion chamber with pressure transducers</li>
+          <li>Interfacing with vendors to manufacture a new flight engine with advanced methods (metal additive manufacturing)</li>
+          <li>Secured PARSEC a partnership with Ansys, granting us many full licenses for advanced modeling</li>
+        </ul>
+      </div>
+      <div class="entry">
         <h3 class="entry-title">Independent Researcher (Self-Directed) - Combustion + Machine Learning</h3>
         <p class="entry-subtitle">Guided by Prof. Tarek Echekki of NC State, Remote</p>
-        <p class="entry-duration">May 2025 - Present</p>
+        <p class="entry-duration">May 2025 - Sep 2025</p>
         <ul>
-          <li>Wrote general code for reproducible data generation and processing under different conditions</li>
+          <li>Developed a framework to accelerate and simplify combustion simulations by pruning redundant chemical species</li>
+          <li>Built a novel reproducible Python/Cantera pipeline to simulate methane-air and gasoline surrogate combustion</li>
           <li>Trained PyTorch regression models using LASSO and “gated heads” to reduce species in combustion mechanisms by up to 80%</li>
           <li>Automated evaluation of reduced mechanism performance, noting methane combustion simulation speed increases of up to 400% with 90% accuracy</li>
         </ul>
@@ -73,7 +87,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <p class="entry-subtitle">Explosion Dynamics Lab, Caltech</p>
         <p class="entry-duration">June 2024 – August 2024</p>
         <ul>
+          <li>Supporting the development of sustainable aviation fuels by verifying ignition correlations through experimentation</li>
           <li>Used Excel/MATLAB to investigate autoignition temperature (AIT) correlations in jet fuels and identified 7 paths to research</li>
+          <li>Planned and conducted experiments verifying correlations between branches and compactness of molecules to AIT</li>
           <li>Analyzed industry-standard fuel batches and surrogate fuels using GC-MS data and AIChE DIPPR chemical database</li>
           <li>Presented data at two conferences, a seminar, weekly meetings with the lab group, and monthly meetings with Boeing</li>
         </ul>
@@ -85,6 +101,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <ul>
           <li>Head TA - SA 16c: Cooking Basics</li>
           <li>TA - ChE63a: Chemical Engineering Thermodynamics</li>
+          <li>TA - Ge01: Earth and Environment</li>
         </ul>
       </div>
       <div class="entry">
@@ -191,6 +208,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div class="skills-group">
     <h3 class="skills-heading">Modeling &amp; Simulation</h3>
     <div class="skills-grid">
+      <span class="skill-chip">COMSOL</span>
       <span class="skill-chip">Cantera</span>
       <span class="skill-chip">FDS / PyroSim</span>
       <span class="skill-chip">ANSYS Fluent</span>
